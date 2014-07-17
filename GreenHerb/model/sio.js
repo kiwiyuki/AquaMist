@@ -1,4 +1,3 @@
-//http://iti.hatenablog.jp/entry/2014/05/27/112806
 var socket = require('socket.io');
 
 module.exports = sio;
