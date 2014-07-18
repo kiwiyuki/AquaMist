@@ -1,38 +1,52 @@
 // デバッグヘルパー
-var DebugHelper = function() {
-	// 初期値はfalseで固定
+var DebugHelper = function(parentElement) {
+	// three.js 読み込みチェック
+	if(THREE == undefined) {
+		console.log("three.jsが読み込まれていません");
+		return;
+	}
+
 	var DEBUG = false;
+
+	// 情報表示用DOM
+	var info = document.createElement("div");
+	info.style.position = "absolute";
+	info.style.left = "0px";
+	info.style.top = "0px";
+	info.style.textAlign = "left";
+	if(DEBUG) parentElement.appendChild(info);
 
 	// fps表示
 	var stats = new Stats();
 	stats.setMode(0);
-	stats.domElement.style.position = 'absolute';
-	stats.domElement.style.left = '0px';
-	stats.domElement.style.top = '0px';
+	info.appendChild(stats.domElement);
+
+	// 座標表示
+	var pos = document.createElement("div");
+	info.appendChild(pos);
 
 	// 座標軸表示
-	if (THREE != undefined) {
-		var axis = new THREE.AxisHelper(1000);
-		axis.position.set(0, 0, 0);
-	} else {
-		console.log("three.jsが読み込まれていません");
-		return;
-	}
-	
+	var axis = new THREE.AxisHelper(1000);
+	axis.position.set(0, 0, 0);	
 
 	return {
-		update : function() {
-			if(DEBUG) stats.update();
+		update : function(position) {
+			if(DEBUG) {
+				stats.update();
+				if(position != undefined) {
+					pos.innerHTML = "x: " + position.x + "<br>" + "y: " + position.y;
+				};
+			};
 		},
 
 		modeChange : function(scene) {
 			if (DEBUG) {
-				document.getElementById("game").removeChild(stats.domElement);
+				parentElement.removeChild(info);
 				scene.remove(axis);
-				
+
 				DEBUG = !DEBUG;
 			} else {
-				document.getElementById("game").appendChild(stats.domElement);
+				parentElement.appendChild(info);
 				scene.add(axis);
 
 				DEBUG = !DEBUG;
@@ -45,8 +59,9 @@ var DebugHelper = function() {
 	// グローバル変数
 	var WIDTH = window.innerWidth;
 	var HEIGHT = window.innerHeight;
+	var socket;
 	var scene, camera, renderer;
-	var debugHelper = new DebugHelper();
+	var debugHelper = new DebugHelper(document.getElementById("game"));
 	var player;
 
 	// 初期化
@@ -59,7 +74,7 @@ var DebugHelper = function() {
 
 		// カメラ
 		camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 1, 10000);
-		camera.position.set(0, 0, 600);
+		camera.position.set(0, 0, 800);
 		camera.lookAt(new THREE.Vector3(0, 0, 0));
 
 		// レンダラー
@@ -87,15 +102,33 @@ var DebugHelper = function() {
 
 		// ループ開始
 		requestAnimationFrame(gameLoop);
+
+		// WebSocket開始
+		socket = io.connect();
 	}
+
+
 
 	// ゲームループ
 	function gameLoop() {
 		player.update();
 		renderer.render(scene, camera);
 
+		// カメラ移動
+		var d = 0.95;
+		var targetPositionX = camera.position.x * d + player.getPosition().x * (1 - d);
+		var targetPositionY = camera.position.y * d + player.getPosition().y * (1 - d);
+		camera.position.x = targetPositionX;
+		camera.position.y = targetPositionY;
+		camera.lookAt(new THREE.Vector3(targetPositionX, targetPositionY, 0));
+
 		requestAnimationFrame(gameLoop);
-		debugHelper.update();
+		debugHelper.update(player.getPosition());
+
+		// サーバーへデータ送信
+		socket.json.emit("client data", {
+
+		});
 	}
 
 	// イベントリスナー
@@ -135,7 +168,7 @@ var DebugHelper = function() {
 			break;
 		}
 
-		// console.log(e.keyCode);
+		// console.log(player.getPosition());
 	}
 
 	function onKeyUp(e) {
@@ -182,6 +215,10 @@ var DebugHelper = function() {
 
 		return {
 			controls : controls,
+			
+			getPosition : function() {
+				return box.position;
+			},
 
 			generate : function(scene) {
 				var boxSize = 30;
