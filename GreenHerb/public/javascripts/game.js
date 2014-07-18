@@ -143,7 +143,9 @@ var DebugHelper = function(parentElement) {
 	socket.on("world data", function(data) {
 		var length = data.allPlayers.length;
 		for(var i = 0; i < length; i++) {
-			if(player.id != data.id) {
+			console.log(data.allPlayers[i].id + " " + player.id);
+
+			if(player.id != data.allPlayers[i].id) {
 				avatarManager.updateAvatar(data.allPlayers[i], scene);
 			}
 		}
@@ -213,7 +215,7 @@ var DebugHelper = function(parentElement) {
 		}
 	}
 
-	function Player(px, py, pcolor , pid) {
+	function Player(px, py, pcolor, pid) {
 		var x = px;
 		var y = py;
 		var speed = 4;
