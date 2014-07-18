@@ -6,18 +6,24 @@ module.exports = sio;
 
 function sio (server) {
 	var io = socket.listen(server);
+
 	// サーバー接続処理
 	io.sockets.on('connection', function (socket) {
+		// プレイヤーデータ初期化
 		var p = init(socket);
-		//初期化、データ送信
-		socket.json.emit('first message', p);
-		//全ユーザーデータ送信
+		// データ送信
+		socket.json.emit('first_message', p);
+
 		//クライアントデータ受信
-		socket.json.on('client data', function (data) {
+		socket.json.on('client_data', function (data) {
 			for(var i = 0; i < world_data.allPlayers.length; i++) {
 				if(data.id == world_data.allPlayers[i].id) {
 					world_data.allPlayers[i].x = data.x;
 					world_data.allPlayers[i].y = data.y;
+<<<<<<< HEAD
+=======
+					// console.log(world_data.allPlayers);
+>>>>>>> 1169644b2bba383671eb723d26606ff2309e98a0
 					break;
 				}
 			}
@@ -26,23 +32,38 @@ function sio (server) {
 			// world_data.allPlayers[index].y = data.y;
 		});
 	});
+
+	// 全プレイヤーデータ送信（毎秒30回）
 	setInterval(function() {
-		io.sockets.json.emit('world data', world_data);
-	},33);
+		io.sockets.json.emit('world_data', world_data);
+	}, 33);
 }
 
+// プレイヤーデータ初期化
 function init(socket) {
 	var x = setPosition();
 	var y = setPosition();
 	var color = setColor();
 	var p = new Player(socket.id, x, y, color);
 	world_data.allPlayers.push(p);
-// 	console.log(world_data.allPlayers);
+	// 	console.log(world_data.allPlayers);
 	return p;
 }
+<<<<<<< HEAD
 function setPosition() {
 	return Math.round((Math.random() - 0.5) * 100);
 }
 function setColor() {
 	return '#'+('00000'+(Math.random()*(1<<24)|0).toString(16)).slice(-6);
+=======
+
+// 座標生成
+function makePosition() {
+	return Math.round((Math.random() - 0.5) * 100);
+}
+
+// カラー生成
+function makeColor() {
+	return '#'　+　('00000'　+　(Math.random()*(1<<24)　|　0).toString(16)).slice(-6);
+>>>>>>> 1169644b2bba383671eb723d26606ff2309e98a0
 }
