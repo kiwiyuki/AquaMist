@@ -17,7 +17,6 @@ function sio (server) {
 		socket.json.on('client data', function (data) {
 			for(var i = 0; i < world_data.allPlayers.length; i++) {
 				if(data.id == world_data.allPlayers[i].id) {
-					console.log(data);
 					world_data.allPlayers[i].x = data.x;
 					world_data.allPlayers[i].y = data.y;
 					break;
