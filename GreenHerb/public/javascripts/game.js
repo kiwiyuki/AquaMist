@@ -107,8 +107,6 @@ var DebugHelper = function(parentElement) {
 		socket = io.connect();
 	}
 
-
-
 	// ゲームループ
 	function gameLoop() {
 		player.update();
@@ -130,6 +128,15 @@ var DebugHelper = function(parentElement) {
 
 		});
 	}
+
+	// データ受信
+	socket.on("first message", function(data) {
+		console.log(data);
+	});
+
+	socket.on("world data", function(data) {
+
+	});
 
 	// イベントリスナー
 	function onWindowResize(e) {
@@ -240,6 +247,22 @@ var DebugHelper = function(parentElement) {
 				box.rotation.x += rotateAngle;
 				box.rotation.y += rotateAngle;
 			}
+		};
+	}
+
+	function AvatarManager() {
+		var avatars = [];
+
+		this.addAvatar = function(x, y, id, scene) {
+			var boxSize = 30;
+			var g = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
+			var m = new THREE.MeshLambertMaterial({color : "blue"});
+			box = new THREE.Mesh(g, m);
+			box.position.set(x, y, 0);
+			b.prototype.avatarID = id;
+
+			avatars.push(b);
+			scene.add(b)
 		};
 	}
 })();
