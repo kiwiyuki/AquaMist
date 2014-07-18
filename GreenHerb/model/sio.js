@@ -11,7 +11,6 @@ function sio (server) {
 		var y = makePosition();
 		var color = makeColor();
 		var p = new Player(socket.id, x, y, color);
-		console.log(p.id);
 		//first_msg
 		socket.json.emit('first message', p);
 	});
@@ -19,7 +18,7 @@ function sio (server) {
 }
 
 function makePosition() {
-	return (Math.random() - 0.5) * 100;
+	return Math.round(Math.random() - 0.5) * 100;
 }
 function makeColor() {
 	return '#'+('00000'+(Math.random()*(1<<24)|0).toString(16)).slice(-6);
