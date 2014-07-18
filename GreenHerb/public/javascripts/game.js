@@ -27,7 +27,7 @@ var DebugHelper = function(parentElement) {
 
 	// 座標軸表示
 	var axis = new THREE.AxisHelper(1000);
-	axis.position.set(0, 0, 0);	
+	axis.position.set(0, 0, 0);
 
 	return {
 		update : function(position) {
@@ -92,8 +92,8 @@ var DebugHelper = function(parentElement) {
 		var ambient = new THREE.AmbientLight(0x550000, 1);
 		scene.add(ambient);
 
-		player = new Player(0, 0, "red");
-		player.generate(scene);
+// 		player = new Player(0, 0, "red");
+// 		player.generate(scene);
 
 		// イベント追加
 		window.addEventListener('resize', onWindowResize, false);
@@ -215,7 +215,7 @@ var DebugHelper = function(parentElement) {
 
 		return {
 			controls : controls,
-			
+
 			getPosition : function() {
 				return box.position;
 			},

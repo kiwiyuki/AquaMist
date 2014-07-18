@@ -5,15 +5,15 @@ module.exports = sio;
 
 function sio (server) {
 	var io = socket.listen(server);
-		// サーバー接続処理
+	// サーバー接続処理
 	io.sockets.on('connection', function (socket) {
 		var x = makePosition();
 		var y = makePosition();
 		var color = makeColor();
 		var p = new Player(socket.id, x, y, color);
-		console.log(p);
+		console.log(p.id);
 		//first_msg
-		socket.json.emit('first message', p);//message
+		socket.json.emit('first message', p);
 	});
 
 }
