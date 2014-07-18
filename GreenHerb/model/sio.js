@@ -1,8 +1,6 @@
 var socket = require('socket.io');
 var Player = require('./game/player');
-var world_data = {};
-world_data.allPlayers = [];
-module.exports = sio;
+var world_data = require('./game/world_data');
 
 function sio (server) {
 	var io = socket.listen(server);
@@ -10,27 +8,35 @@ function sio (server) {
 	// サーバー接続処理
 	io.sockets.on('connection', function (socket) {
 		// プレイヤーデータ初期化
-		var p = init(socket);
+		var player = initPlayer(socket);
 		// データ送信
-		socket.json.emit('first_message', p);
-
+		socket.json.emit('first_message', player,function () {
+			console.log("first_message send!");
+		});
 		//クライアントデータ受信
 		socket.json.on('client_data', function (data) {
 			for(var i = 0; i < world_data.allPlayers.length; i++) {
 				if(data.id == world_data.allPlayers[i].id) {
 					world_data.allPlayers[i].x = data.x;
 					world_data.allPlayers[i].y = data.y;
-<<<<<<< HEAD
-=======
-					// console.log(world_data.allPlayers);
->>>>>>> 1169644b2bba383671eb723d26606ff2309e98a0
 					break;
 				}
 			}
-// 			var index = world_data.allPlayers.indexOf(data.id);
+			// var index = world_data.allPlayers.indexOf(data.id);
 			// world_data.allPlayers[index].x = data.x;
 			// world_data.allPlayers[index].y = data.y;
 		});
+		// 切断処理
+		socket.on('disconnect',function () {
+			for(var i = 0; i < world_data.allPlayers.length; i++) {
+				if(world_data.allPlayers[i].id === socket.id) {
+					world_data.allPlayers.splice(i, 1);
+					console.log(socket.id + " disconnect");
+					break;
+				}
+			}
+		});
+
 	});
 
 	// 全プレイヤーデータ送信（毎秒30回）
@@ -40,30 +46,21 @@ function sio (server) {
 }
 
 // プレイヤーデータ初期化
-function init(socket) {
+function initPlayer(socket) {
 	var x = setPosition();
 	var y = setPosition();
 	var color = setColor();
 	var p = new Player(socket.id, x, y, color);
 	world_data.allPlayers.push(p);
-	// 	console.log(world_data.allPlayers);
 	return p;
 }
-<<<<<<< HEAD
+// 座標生成
 function setPosition() {
 	return Math.round((Math.random() - 0.5) * 100);
 }
-function setColor() {
-	return '#'+('00000'+(Math.random()*(1<<24)|0).toString(16)).slice(-6);
-=======
-
-// 座標生成
-function makePosition() {
-	return Math.round((Math.random() - 0.5) * 100);
-}
-
 // カラー生成
-function makeColor() {
-	return '#'　+　('00000'　+　(Math.random()*(1<<24)　|　0).toString(16)).slice(-6);
->>>>>>> 1169644b2bba383671eb723d26606ff2309e98a0
+function setColor() {
+	return '#' + ('00000' + (Math.random() * (1<<24)|0).toString(16)).slice(-6);
 }
+
+module.exports = sio;
