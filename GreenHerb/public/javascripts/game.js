@@ -63,9 +63,21 @@ var DebugHelper = function(parentElement) {
 	var scene, camera, renderer;
 	var debugHelper = new DebugHelper(document.getElementById("game"));
 	var player;
+	var avatarManager;
 
-	// 初期化
-	init();
+	// WebSocket開始
+	socket = io.connect();
+
+	var flag = true;
+	// データ受信
+	if(flag) socket.on("first message", function(data) {
+		init();
+
+		player = new Player(data.x, data.y, data.color, data.id);
+		player.generate(scene);
+
+		flag = false;
+	});
 
 	// 初期化
 	function init() {
@@ -92,19 +104,16 @@ var DebugHelper = function(parentElement) {
 		var ambient = new THREE.AmbientLight(0x550000, 1);
 		scene.add(ambient);
 
-// 		player = new Player(0, 0, "red");
-// 		player.generate(scene);
-
 		// イベント追加
 		window.addEventListener('resize', onWindowResize, false);
 		window.addEventListener('keydown', onKeyDown, false);
 		window.addEventListener('keyup', onKeyUp, false);
 
+		// アバターマネージャー起動
+		avatarManager = new AvatarManager();
+
 		// ループ開始
 		requestAnimationFrame(gameLoop);
-
-		// WebSocket開始
-		socket = io.connect();
 	}
 
 	// ゲームループ
@@ -120,22 +129,22 @@ var DebugHelper = function(parentElement) {
 		camera.position.y = targetPositionY;
 		camera.lookAt(new THREE.Vector3(targetPositionX, targetPositionY, 0));
 
-		requestAnimationFrame(gameLoop);
 		debugHelper.update(player.getPosition());
+		requestAnimationFrame(gameLoop);
 
 		// サーバーへデータ送信
 		socket.json.emit("client data", {
-
+			"id" : player.id,
+			"x" : player.getPosition().x,
+			"y" : player.getPosition().y
 		});
 	}
 
-	// データ受信
-	socket.on("first message", function(data) {
-		console.log(data);
-	});
-
 	socket.on("world data", function(data) {
-
+		var length = data.allPlayers.length;
+		for(var i = 0; i < length; i++) {
+			avatarManager.updateAvatar(data.allPlayers[i]);
+		}
 	});
 
 	// イベントリスナー
@@ -202,14 +211,14 @@ var DebugHelper = function(parentElement) {
 		}
 	}
 
-	function Player(px, py) {
+	function Player(px, py, pcolor , pid) {
 		var x = px;
 		var y = py;
 		var speed = 4;
 		var hp;
-		var id;
+		var id = pid;
 		var box;
-		var color;
+		var color = pcolor;
 
 		var rotateAngle = 2 * Math.PI / 180;
 
@@ -222,6 +231,7 @@ var DebugHelper = function(parentElement) {
 
 		return {
 			controls : controls,
+			id: id,
 
 			getPosition : function() {
 				return box.position;
@@ -230,7 +240,7 @@ var DebugHelper = function(parentElement) {
 			generate : function(scene) {
 				var boxSize = 30;
 				var g = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
-				var m = new THREE.MeshLambertMaterial({color : "red"});
+				var m = new THREE.MeshLambertMaterial({color : color});
 				box = new THREE.Mesh(g, m);
 				box.position.set(x, y, 0);
 
@@ -252,17 +262,33 @@ var DebugHelper = function(parentElement) {
 
 	function AvatarManager() {
 		var avatars = [];
+		var num = 0;
 
-		this.addAvatar = function(x, y, id, scene) {
+		this.addAvatar = function(x, y, id, color, scene) {
 			var boxSize = 30;
 			var g = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
-			var m = new THREE.MeshLambertMaterial({color : "blue"});
+			var m = new THREE.MeshLambertMaterial({color : color});
 			box = new THREE.Mesh(g, m);
 			box.position.set(x, y, 0);
-			b.prototype.avatarID = id;
+			box.avatarID = id;
 
-			avatars.push(b);
-			scene.add(b)
+			avatars.push(box);
+			scene.add(box);
+			num++;
+		};
+
+		this.updateAvatar = function(data, scene) {
+			var i = 0;
+			while(i < num) {
+				if(avatars[i].avatarID == data.id) {
+					avatars[i].x = data.x;
+					avatars[i].y = data.y;
+				} else {
+					this.addAvatar(data.x, data.y, data.color, scene)
+				}
+
+				i--;
+			}
 		};
 	}
 })();
