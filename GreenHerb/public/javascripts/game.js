@@ -279,6 +279,7 @@ var DebugHelper = function(parentElement) {
 
 		this.updateAvatar = function(data, scene) {
 			var i = 0;
+			if(num == 0) this.addAvatar(data.x, data.y, data.color, scene);
 			while(i < num) {
 				if(avatars[i].avatarID == data.id) {
 					avatars[i].x = data.x;
@@ -287,8 +288,12 @@ var DebugHelper = function(parentElement) {
 					this.addAvatar(data.x, data.y, data.color, scene)
 				}
 
-				i--;
+				i++;
 			}
 		};
+
+		this.move = function() {
+
+		}
 	}
 })();
