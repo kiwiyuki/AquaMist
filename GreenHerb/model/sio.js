@@ -8,7 +8,7 @@ function sio (server) {
 	var io = socket.listen(server);
 	// サーバー接続処理
 	io.sockets.on('connection', function (socket) {
-		var p = init();
+		var p = init(socket);
 		//初期化、データ送信
 		socket.json.emit('first message', p);
 		//全ユーザーデータ送信
@@ -29,12 +29,13 @@ function sio (server) {
 	});
 }
 
-function init() {
+function init(socket) {
 	var x = makePosition();
 	var y = makePosition();
 	var color = makeColor();
 	var p = new Player(socket.id, x, y, color);
 	world_data.allPlayers.push(p);
+	console.log(world_data.allPlayers);
 	return p;
 }
 function makePosition() {
