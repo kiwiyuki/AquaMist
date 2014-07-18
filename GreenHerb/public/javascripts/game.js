@@ -6,7 +6,8 @@ var DebugHelper = function(parentElement) {
 		return;
 	}
 
-	var DEBUG = false;
+	// デバッグモードフラグ
+	var DEBUG = true;
 
 	// 情報表示用DOM
 	var info = document.createElement("div");
@@ -30,6 +31,7 @@ var DebugHelper = function(parentElement) {
 	axis.position.set(0, 0, 0);
 
 	return {
+		// 情報更新時
 		update : function(position) {
 			if(DEBUG) {
 				stats.update();
@@ -39,6 +41,7 @@ var DebugHelper = function(parentElement) {
 			};
 		},
 
+		// デバッグモード切替
 		modeChange : function(scene) {
 			if (DEBUG) {
 				parentElement.removeChild(info);
@@ -56,7 +59,7 @@ var DebugHelper = function(parentElement) {
 };
 
 (function() {
-	// グローバル変数
+	// ゲーム変数
 	var WIDTH = window.innerWidth;
 	var HEIGHT = window.innerHeight;
 	var socket;
@@ -68,9 +71,8 @@ var DebugHelper = function(parentElement) {
 	// WebSocket開始
 	socket = io.connect();
 
-	var flag = true;
 	// データ受信
-	if(flag) socket.on("first message", function(data) {
+	socket.on("first_message", function(data) {
 		init();
 
 		player = new Player(data.x, data.y, data.color, data.id);
@@ -114,12 +116,14 @@ var DebugHelper = function(parentElement) {
 
 		// ループ開始
 		requestAnimationFrame(gameLoop);
+		// setInterval(gameLoop, 16);
 	}
 
 	// ゲームループ
 	function gameLoop() {
+		// 各状態更新
 		player.update();
-		renderer.render(scene, camera);
+		avatarManager.rotateAvatar();
 
 		// カメラ移動
 		var d = 0.95;
@@ -128,27 +132,34 @@ var DebugHelper = function(parentElement) {
 		camera.position.x = targetPositionX;
 		camera.position.y = targetPositionY;
 		camera.lookAt(new THREE.Vector3(targetPositionX, targetPositionY, 0));
-
-		debugHelper.update(player.getPosition());
-		requestAnimationFrame(gameLoop);
+		
+		// レンダリング
+		renderer.render(scene, camera);
 
 		// サーバーへデータ送信
-		socket.json.emit("client data", {
+		socket.json.emit("client_data", {
 			"id" : player.id,
 			"x" : player.getPosition().x,
 			"y" : player.getPosition().y
 		});
+
+		debugHelper.update(player.getPosition());
+		requestAnimationFrame(gameLoop);
 	}
 
-	socket.on("world data", function(data) {
-		var length = data.allPlayers.length;
-		for(var i = 0; i < length; i++) {
-			console.log(data.allPlayers[i].id + " " + player.id);
-
-			if(player.id != data.allPlayers[i].id) {
-				avatarManager.updateAvatar(data.allPlayers[i], scene);
+	socket.on("world_data", function(data) {
+		// 自分以外のプレイヤーが配列に登録してあるか検索
+		data.allPlayers.forEach(function(p) {
+			if(player.id != p.id) {
+				// 見つかれば位置の更新
+				// そうじゃなければ新規登録
+				if(avatarManager.findAvatar(p)) {
+					
+				} else {
+					avatarManager.addAvatar(p.x, p.y, p.id, p.color, scene);
+				}
 			}
-		}
+		});
 	});
 
 	// イベントリスナー
@@ -267,6 +278,7 @@ var DebugHelper = function(parentElement) {
 	function AvatarManager() {
 		var avatars = [];
 		var num = 0;
+		var rotateAngle = 2 * Math.PI / 180;
 
 		this.addAvatar = function(x, y, id, color, scene) {
 			var boxSize = 30;
@@ -281,23 +293,21 @@ var DebugHelper = function(parentElement) {
 			num++;
 		};
 
-		this.updateAvatar = function(data, scene) {
-			var i = 0;
-			while(i < num) {
-				if(avatars[i].avatarID == data.id) {
-					avatars[i].x = data.x;
-					avatars[i].y = data.y;
-					return;
-				} 
-
-				i++;
+		this.findAvatar = function(data) {
+			for (var i = 0; i < num; i++) {
+				if (avatars[i].avatarID == data.id) {
+					avatars[i].position.x = data.x;
+					avatars[i].position.y = data.y;
+					return true;
+				}
 			}
-
-			this.addAvatar(data.x, data.y, data.id, data.color, scene);
 		};
 
-		this.move = function() {
-
-		}
+		this.rotateAvatar = function() {
+			for (var i = 0; i < num; i++) {
+				avatars[i].rotation.x += rotateAngle;
+				avatars[i].rotation.y += rotateAngle;
+			}
+		};
 	}
 })();

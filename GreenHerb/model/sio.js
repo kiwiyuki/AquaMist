@@ -12,10 +12,10 @@ function sio (server) {
 		// プレイヤーデータ初期化
 		var p = init(socket);
 		// データ送信
-		socket.json.emit('first message', p);
+		socket.json.emit('first_message', p);
 
 		//クライアントデータ受信
-		socket.json.on('client data', function (data) {
+		socket.json.on('client_data', function (data) {
 			for(var i = 0; i < world_data.allPlayers.length; i++) {
 				if(data.id == world_data.allPlayers[i].id) {
 					world_data.allPlayers[i].x = data.x;
@@ -32,7 +32,7 @@ function sio (server) {
 
 	// 全プレイヤーデータ送信（毎秒30回）
 	setInterval(function() {
-		io.sockets.json.emit('world data', world_data);
+		io.sockets.json.emit('world_data', world_data);
 	}, 33);
 }
 
