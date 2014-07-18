@@ -12,13 +12,13 @@ function sio (server) {
 		//初期化、データ送信
 		socket.json.emit('first message', p);
 		//全ユーザーデータ送信
-		io.sockets.json.emit('world data', world_data);
 		//クライアントデータ受信
 		socket.json.on('client data', function (data) {
 			for(var i = 0; i < world_data.allPlayers.length; i++) {
 				if(data.id == world_data.allPlayers[i].id) {
 					world_data.allPlayers[i].x = data.x;
 					world_data.allPlayers[i].y = data.y;
+					console.log(world_data.allPlayers);
 					break;
 				}
 			}
@@ -27,6 +27,9 @@ function sio (server) {
 			// world_data.allPlayers[index].y = data.y;
 		});
 	});
+	setInterval(function() {
+		io.sockets.json.emit('world data', world_data);
+	},33);
 }
 
 function init(socket) {
@@ -35,7 +38,7 @@ function init(socket) {
 	var color = makeColor();
 	var p = new Player(socket.id, x, y, color);
 	world_data.allPlayers.push(p);
-	console.log(world_data.allPlayers);
+// 	console.log(world_data.allPlayers);
 	return p;
 }
 function makePosition() {
