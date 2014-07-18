@@ -143,7 +143,9 @@ var DebugHelper = function(parentElement) {
 	socket.on("world data", function(data) {
 		var length = data.allPlayers.length;
 		for(var i = 0; i < length; i++) {
-			avatarManager.updateAvatar(data.allPlayers[i]);
+			if(player.id != data.id) {
+				avatarManager.updateAvatar(data.allPlayers[i], scene);
+			}
 		}
 	});
 
@@ -279,17 +281,17 @@ var DebugHelper = function(parentElement) {
 
 		this.updateAvatar = function(data, scene) {
 			var i = 0;
-			if(num == 0) this.addAvatar(data.x, data.y, data.color, scene);
 			while(i < num) {
 				if(avatars[i].avatarID == data.id) {
 					avatars[i].x = data.x;
 					avatars[i].y = data.y;
-				} else {
-					this.addAvatar(data.x, data.y, data.color, scene)
-				}
+					return;
+				} 
 
 				i++;
 			}
+
+			this.addAvatar(data.x, data.y, data.id, data.color, scene);
 		};
 
 		this.move = function() {
