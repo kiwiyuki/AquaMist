@@ -18,11 +18,10 @@ function sio (server) {
 				if(data.id == world_data.allPlayers[i].id) {
 					world_data.allPlayers[i].x = data.x;
 					world_data.allPlayers[i].y = data.y;
-					console.log(world_data.allPlayers);
 					break;
 				}
 			}
-			// var index = world_data.allPlayers.indexOf(data.id);
+// 			var index = world_data.allPlayers.indexOf(data.id);
 			// world_data.allPlayers[index].x = data.x;
 			// world_data.allPlayers[index].y = data.y;
 		});
@@ -33,17 +32,17 @@ function sio (server) {
 }
 
 function init(socket) {
-	var x = makePosition();
-	var y = makePosition();
-	var color = makeColor();
+	var x = setPosition();
+	var y = setPosition();
+	var color = setColor();
 	var p = new Player(socket.id, x, y, color);
 	world_data.allPlayers.push(p);
 // 	console.log(world_data.allPlayers);
 	return p;
 }
-function makePosition() {
+function setPosition() {
 	return Math.round((Math.random() - 0.5) * 100);
 }
-function makeColor() {
+function setColor() {
 	return '#'+('00000'+(Math.random()*(1<<24)|0).toString(16)).slice(-6);
 }
