@@ -1,14 +1,25 @@
 var socket = require('socket.io');
-
+var Player = require('./game/player');
+var allPlayer = {};
 module.exports = sio;
 
 function sio (server) {
 	var io = socket.listen(server);
 		// サーバー接続処理
-	io.socket.on('connection', function (socket) {
+	io.sockets.on('connection', function (socket) {
+		var x = Math.random()*10 - 5;
+		var y = Math.random()*10 - 5;
+		var color = makeColor();
+		var p = new Player(socket.id, x, y, color);
+		console.log(p);
 		//first_msg
-		socket.emit('first_msg', function () {
-
-		});
+		socket.json.emit('first message', p);//message
 	});
+}
+
+function makePosition() {
+	return (Math.random() - 0.5) *
+}
+function makeColor() {
+	return '#'+('00000'+(Math.random()*(1<<24)|0).toString(16)).slice(-6);
 }
