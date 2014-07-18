@@ -18,7 +18,7 @@ function sio (server) {
 }
 
 function makePosition() {
-	return Math.round(Math.random() - 0.5) * 100;
+	return Math.round((Math.random() - 0.5) * 100);
 }
 function makeColor() {
 	return '#'+('00000'+(Math.random()*(1<<24)|0).toString(16)).slice(-6);
