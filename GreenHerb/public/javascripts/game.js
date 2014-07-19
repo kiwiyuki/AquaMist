@@ -153,7 +153,7 @@ var DebugHelper = function(parentElement) {
 			if(player.id != p.id) {
 				// 見つかれば位置の更新
 				// そうじゃなければ新規登録
-				if(avatarManager.findAvatar(p)) {
+				if(avatarManager.updateAvatar(p)) {
 					
 				} else {
 					avatarManager.addAvatar(p.x, p.y, p.id, p.color, scene);
@@ -278,22 +278,24 @@ var DebugHelper = function(parentElement) {
 	function AvatarManager() {
 		var avatars = [];
 		var num = 0;
-		var rotateAngle = 2 * Math.PI / 180;
+		var rotateAngle = Math.PI / 90;
 
 		this.addAvatar = function(x, y, id, color, scene) {
+			num++;
 			var boxSize = 30;
 			var g = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
 			var m = new THREE.MeshLambertMaterial({color : color});
 			box = new THREE.Mesh(g, m);
 			box.position.set(x, y, 0);
+			box.rotation.x = num * rotateAngle * 60;
+			box.rotation.y = num * rotateAngle * 60;
 			box.avatarID = id;
 
 			avatars.push(box);
 			scene.add(box);
-			num++;
 		};
 
-		this.findAvatar = function(data) {
+		this.updateAvatar = function(data) {
 			for (var i = 0; i < num; i++) {
 				if (avatars[i].avatarID == data.id) {
 					avatars[i].position.x = data.x;
@@ -308,6 +310,9 @@ var DebugHelper = function(parentElement) {
 				avatars[i].rotation.x += rotateAngle;
 				avatars[i].rotation.y += rotateAngle;
 			}
+		};
+
+		this.removeAvatar = function(data) {
 		};
 	}
 })();
