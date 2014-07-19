@@ -67,6 +67,7 @@ var DebugHelper = function(parentElement) {
 	var debugHelper = new DebugHelper(document.getElementById("game"));
 	var player;
 	var avatarManager;
+	var shotManager = new ShotManager();;
 
 	// WebSocket開始
 	socket = io.connect();
@@ -124,6 +125,7 @@ var DebugHelper = function(parentElement) {
 		// 各状態更新
 		player.update();
 		avatarManager.rotateAvatar();
+		shotManager.update();
 
 		// カメラ移動
 		var d = 0.95;
@@ -153,7 +155,7 @@ var DebugHelper = function(parentElement) {
 			if(player.id != p.id) {
 				// 見つかれば位置の更新
 				// そうじゃなければ新規登録
-				if(avatarManager.findAvatar(p)) {
+				if(avatarManager.updateAvatar(p)) {
 					
 				} else {
 					avatarManager.addAvatar(p.x, p.y, p.id, p.color, scene);
@@ -173,24 +175,29 @@ var DebugHelper = function(parentElement) {
 
 	function onKeyDown(e) {
 		switch(e.keyCode) {
-			case 37:
+			case 37: // key "Left"
 			e.preventDefault();
 			player.controls.moveLeft = true;
 			break;
 
-			case 38:
+			case 38: // key "Up"
 			e.preventDefault();
 			player.controls.moveUp = true;
 			break;
 
-			case 39:
+			case 39: // key "Right"
 			e.preventDefault();
 			player.controls.moveRight = true;
 			break;
 
-			case 40:
+			case 40: // key "Down"
 			e.preventDefault();
 			player.controls.moveDown = true;
+			break;
+
+			case 90: // key "Z"
+			e.preventDefault();
+			shotManager.addShot(player.getPosition().x, player.getPosition().y, scene);
 			break;
 
 			case 114: // key "F3"
@@ -199,7 +206,7 @@ var DebugHelper = function(parentElement) {
 			break;
 		}
 
-		// console.log(player.getPosition());
+		console.log(e.keyCode);
 	}
 
 	function onKeyUp(e) {
@@ -275,25 +282,61 @@ var DebugHelper = function(parentElement) {
 		};
 	}
 
+	function ShotManager() {
+		var shots = [];
+		var num = 0;
+		var rotateAngle = Math.PI / 90;
+
+		this.addShot = function(x, y, scene) {
+			num++;
+			var sphereSize = 30;
+			var g = new THREE.SphereGeometry(20, 6, 6);
+			var m = new THREE.MeshBasicMaterial({color: 0xff0000});
+			m.wireframe = true;
+			sphere = new THREE.Mesh(g, m);
+			sphere.position.set(x, y, 0);
+			sphere.rotation.x = num * rotateAngle * 60;
+			sphere.rotation.y = num * rotateAngle * 60;
+			sphere.counter = 0;
+
+			shots.push(sphere);
+			scene.add(sphere);
+		};
+
+		this.update = function(data) {
+			shots.forEach(function(s) {
+				s.position.y += 8;
+				s.rotation.x += rotateAngle;
+				s.rotation.y += rotateAngle;
+				s.counter++;
+			});
+		};
+
+		this.removeShot = function(data) {
+		};
+	}
+
 	function AvatarManager() {
 		var avatars = [];
 		var num = 0;
-		var rotateAngle = 2 * Math.PI / 180;
+		var rotateAngle = Math.PI / 90;
 
 		this.addAvatar = function(x, y, id, color, scene) {
+			num++;
 			var boxSize = 30;
 			var g = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
 			var m = new THREE.MeshLambertMaterial({color : color});
 			box = new THREE.Mesh(g, m);
 			box.position.set(x, y, 0);
+			box.rotation.x = num * rotateAngle * 60;
+			box.rotation.y = num * rotateAngle * 60;
 			box.avatarID = id;
 
 			avatars.push(box);
 			scene.add(box);
-			num++;
 		};
 
-		this.findAvatar = function(data) {
+		this.updateAvatar = function(data) {
 			for (var i = 0; i < num; i++) {
 				if (avatars[i].avatarID == data.id) {
 					avatars[i].position.x = data.x;
@@ -308,6 +351,9 @@ var DebugHelper = function(parentElement) {
 				avatars[i].rotation.x += rotateAngle;
 				avatars[i].rotation.y += rotateAngle;
 			}
+		};
+
+		this.removeAvatar = function(data) {
 		};
 	}
 })();

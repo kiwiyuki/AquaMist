@@ -25,4 +25,8 @@ build/Release
 node_modules
 GreenHerb/public/javascripts/lib/*
 package.json
+<<<<<<< HEAD
 setting.js
+=======
+setting.js
+>>>>>>> FETCH_HEAD
