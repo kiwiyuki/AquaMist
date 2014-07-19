@@ -16,15 +16,13 @@ function sio (server) {
 		//クライアントデータ受信
 		socket.json.on('client_data', function (data) {
 			for(var i = 0; i < world_data.allPlayers.length; i++) {
+				//ユーザーデータ更新
 				if(data.id == world_data.allPlayers[i].id) {
 					world_data.allPlayers[i].x = data.x;
 					world_data.allPlayers[i].y = data.y;
 					break;
 				}
 			}
-			// var index = world_data.allPlayers.indexOf(data.id);
-			// world_data.allPlayers[index].x = data.x;
-			// world_data.allPlayers[index].y = data.y;
 		});
 		// 切断処理
 		socket.on('disconnect',function () {
@@ -36,7 +34,6 @@ function sio (server) {
 				}
 			}
 		});
-
 	});
 
 	// 全プレイヤーデータ送信（毎秒30回）

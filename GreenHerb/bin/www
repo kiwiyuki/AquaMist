@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 var debug = require('debug')('GreenHerb');
 var app = require('../app');
-var sio = require('../model/sio');
+var sio = require('../model/socketioController');
 
 app.set('port', process.env.PORT || 3000);
 
