@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<title>WebSocket_Test</title>
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+	<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+	<style>
+	html, body {
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		padding: 0;
+
+		overflow: hidden;
+		background: #111;
+		text-align: center;
+	}
+
+	#canvas {
+		margin: auto;
+		margin-top: 30px;
+
+		background: #fff;
+	}
+	</style>
+</head>
+<body>
+	<canvas id="canvas"></canvas>
+	<script>
+	// サーバー接続
+	var socket = io.connect();
+
+	// canvas 初期化
+	var canvasID = document.getElementById("canvas");
+	var ctx = canvasID.getContext("2d");
+	var canvasWidth = 600;
+	var canvasHeight = 480;
+	// canvas サイズ変更
+	canvasID.setAttribute("width", canvasWidth);
+	canvasID.setAttribute("height", canvasHeight);
+
+	// 自プレイヤー用
+	var mySquare = new Square(canvasWidth / 2, canvasHeight / 2, "red");
+	var vX = 0;
+	var vY = 0;
+	var speed = 3;
+
+	// 全プレイヤー情報格納配列
+	var players = [];
+
+	// AI 情報格納配列
+	var aiPlayers = [];
+
+	// 四角形オブジェクト定義
+	function Square(x, y, color) {
+		this.x = x;
+		this.y = y;
+		this.size = 10;
+
+		this.color = color;
+	}
+	// 描画
+	Square.prototype.draw = function() {
+		var halfWidth = this.size / 2;
+
+		ctx.fillStyle = this.color;
+		ctx.fillRect(this.x - halfWidth, this.y - halfWidth, this.size, this.size);
+	}
+
+	// 状態更新
+	function update() {
+		// 画面消去
+		ctx.clearRect(0, 0, 600, 480);
+
+		// AI 描画
+		for(var i = 0 ; i < aiPlayers.length;i++) {
+			aiPlayers[i].draw();
+		}
+
+		// 全プレイヤー描画
+		for(var i = 0 ; i < players.length;i++) {
+			players[i].draw();
+		}
+
+		// 位置情報送信
+		socket.json.emit('data_update', {
+			"x" : mySquare.x,
+			"y" : mySquare.y
+		});
+
+		// プレイヤー状態更新
+		mySquare.draw();
+		mySquare.x += vX;
+		mySquare.y += vY;
+	}
+
+	// イベントリスナー
+	window.addEventListener("keydown", onKeyDown, false);
+	window.addEventListener("keyup", onKeyUp, false);
+	function onKeyDown(e) {
+		switch(e.keyCode) {
+			case 37:
+			e.preventDefault();
+			vX = -speed;
+			break;
+
+			case 38:
+			e.preventDefault();
+			vY = -speed;
+			break;
+
+			case 39:
+			e.preventDefault();
+			vX = speed;
+			break;
+
+			case 40:
+			e.preventDefault();
+			vY = speed;
+			break;
+		}
+	}
+
+	function onKeyUp(e) {
+		switch(e.keyCode) {
+			case 37:
+			e.preventDefault();
+			vX = vX > 0 ? vX : 0;
+			break;
+
+			case 38:
+			e.preventDefault();
+			vY = vY > 0 ? vY : 0;
+			break;
+
+			case 39:
+			e.preventDefault();
+			vX = vX < 0 ? vX : 0;
+			break;
+
+			case 40:
+			e.preventDefault();
+			vY = vY < 0 ? vY : 0;
+			break;
+		}
+	}
+
+	// 他プレイヤー情報受信
+	socket.on('data_players',function (data) {
+		var p = [];
+		for(var i = 0 ; i < data.length;i++) {
+			var s = new Square(data[i].x, data[i].y, "blue");
+			p.push(s);
+		}
+		players = p;
+
+		// update();
+	});
+
+	// AI 情報受信
+	socket.on('data_ai',function (data) {
+		var ai = [];
+		for(var i = 0 ; i < data.length;i++) {
+			var s = new Square(data[i].x, data[i].y, "black");
+			ai.push(s);
+		}
+		aiPlayers = ai;
+	});
+
+	
+	// ループ（fps: 30）
+	setInterval(function() {
+		update();
+	}, 33);
+
+</script>
+</body>
+</html>
