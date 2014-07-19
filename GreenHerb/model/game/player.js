@@ -3,6 +3,7 @@ var Player = function (_id, _x, _y, _color) {
 		this.x = _x;
 		this.y = _y;
 		this.color = _color;
+		this.shots = [];
 // 		this.score = 0;
 }
 
