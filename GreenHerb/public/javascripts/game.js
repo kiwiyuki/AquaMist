@@ -150,6 +150,9 @@ var DebugHelper = function(parentElement) {
 	}
 
 	socket.on("world_data", function(data) {
+		// 他プレイヤーの削除
+		avatarManager.removeAvatarEntry(data.allPlayers);
+
 		// 自分以外のプレイヤーが配列に登録してあるか検索
 		data.allPlayers.forEach(function(p) {
 			if(player.id != p.id) {
@@ -206,7 +209,7 @@ var DebugHelper = function(parentElement) {
 			break;
 		}
 
-		console.log(e.keyCode);
+		// console.log(e.keyCode);
 	}
 
 	function onKeyUp(e) {
@@ -233,6 +236,7 @@ var DebugHelper = function(parentElement) {
 		}
 	}
 
+	// プレイヤー定義
 	function Player(px, py, pcolor, pid) {
 		var x = px;
 		var y = py;
@@ -282,6 +286,7 @@ var DebugHelper = function(parentElement) {
 		};
 	}
 
+	// 自ショット管理
 	function ShotManager() {
 		var shots = [];
 		var num = 0;
@@ -305,7 +310,7 @@ var DebugHelper = function(parentElement) {
 
 		this.update = function(data) {
 			shots.forEach(function(s) {
-				s.position.y += 8;
+				s.position.y += 15;
 				s.rotation.x += rotateAngle;
 				s.rotation.y += rotateAngle;
 				s.counter++;
@@ -316,8 +321,10 @@ var DebugHelper = function(parentElement) {
 		};
 	}
 
+	// 他プレイヤー管理
 	function AvatarManager() {
 		var avatars = [];
+		var removeAvatars = [];
 		var num = 0;
 		var rotateAngle = Math.PI / 90;
 
@@ -353,7 +360,33 @@ var DebugHelper = function(parentElement) {
 			}
 		};
 
-		this.removeAvatar = function(data) {
+		this.removeAvatarEntry = function(allPlayers) {
+			avatars.forEach(function(atr) {
+				var flag = false;
+
+				allPlayers.forEach(function(apyr) {
+					if(atr.avatarID == apyr.id) {
+						flag = true;
+					};
+				});
+
+				if(!flag) {
+					removeAvatars.push(atr);
+				}
+			});
+
+			this.removeAvatar();
+		};
+
+		this.removeAvatar = function() {
+			removeAvatars.forEach(function(rmAvatar) {
+				avatars.splice(avatars.indexOf(rmAvatar), 1);
+				scene.remove(rmAvatar);
+				rmAvatar = undefined;
+				num--;
+			});
+
+			removeAvatar = [];
 		};
 	}
 })();
