@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var passport = require('../model/passportController');
+var db = require('../model/sqlite3Controller');
 
 router.use(passport.initialize());
 router.use(passport.session());
