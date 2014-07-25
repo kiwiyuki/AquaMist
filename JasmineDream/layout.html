@@ -9,7 +9,95 @@
 	<script src="three.min.js"></script>
 	<script src="OrbitControls.js"></script>
 	<script>
-	//body
+	// usage
+	// mydesign() に自分のデザインを書いて新規保存
+
+	/* mydesign() {
+		var g = new THREE.BoxGeometry(50,50,50);
+		var m = new THREE.MeshLambertMaterial({color: "red"});
+		var c = new THREE.Mesh(g,m);
+		c.position.set(25,25,25);
+		return c;
+	} */
+
+	(function() {
+
+		var container;
+		var scene, camera, renderer;
+		var WIDTH;
+		var HEIGHT;
+
+		init();
+		animate();
+
+		function init() {
+			console.log("init");
+			WIDTH = window.innerWidth;
+			HEIGHT = window.innerHeight;
+
+			container = document.createElement('div');
+			document.body.appendChild(container);
+			
+			// scene
+			scene = new THREE.Scene();
+
+			// camera
+			camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 1, 10000);
+			camera.position.set(0, 0, 800);
+			camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+			// renderer
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize(WIDTH, HEIGHT);
+			container.appendChild(renderer.domElement);
+
+			// light
+			var light = new THREE.DirectionalLight(0xffffff, 1);
+			light.position.set(WIDTH / 2, HEIGHT / 2, 1000);
+			scene.add(light);
+
+			// ambient
+			var ambient = new THREE.AmbientLight(0x222222, 1);
+			scene.add(ambient);
+
+			window.addEventListener('resize', onWindowResize, false);
+
+			// axis
+			// var axis = new THREE.AxisHelper(1000);
+			// axis.position.set(0, 0, 0);
+			// scene.add(axis);
+
+			// OrbitControl
+			var controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+			scene.add(mydesign());
+		}
+		function animate() {
+			requestAnimationFrame(animate);
+			render();
+		}
+		function render() {
+			renderer.render(scene, camera);
+		}
+		function onWindowResize() {
+			WIDTH = window.innerWidth;
+			HEIGHT = window.innerHeight;
+			renderer.setSize(WIDTH, HEIGHT);
+			camera.aspect = WIDTH / HEIGHT;
+			camera.updateProjectionMatrix();
+		}
+		// mydesign
+
+		function mydesign() {
+			var g = new THREE.BoxGeometry(200,200,200);
+			var m = new THREE.MeshBasicMaterial({color: "red",wireframe: true});
+			var c = new THREE.Mesh(g,m);
+			c.position.set(0,0,0);
+			return c;	
+		} 
+
+
+	})();
 	</script>
 </body>
 </html>
