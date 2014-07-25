@@ -3,3 +3,11 @@ extends layout
 block content
   h1
     a(href="/greenherb") game start
+  h1
+    a(href="/logout") logout
+  img(src=user.photos[0].value)
+  ul
+    li= user.id
+    li= user.username
+    li= user.displayName
+    li= date

@@ -4,7 +4,7 @@ var util = require('../util');
 
 /* GET users listing. */
 router.get('/', util.ensureAuthenticated, function(req, res) {
-  res.render('user');
+	res.render('user',{user: req.session.user, date: req.session.date });
 });
 
 module.exports = router;

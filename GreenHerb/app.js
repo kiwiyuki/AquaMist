@@ -6,10 +6,11 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 var sessionstore = require('sessionstore');
-
+var passport = require('./model/passportController');
 var routes = require('./routes/index');
 var user = require('./routes/user');
 var login = require('./routes/login');
+var logout = require('./routes/logout');
 var greenherb = require('./routes/greenherb');
 
 var app = express();
@@ -28,7 +29,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
 	cookie: {
 		httpOnly: false,
-		maxAge: 60*60*24*30
+		maxAge: 60*60*24
 	},
 	secret: 'twitter-login',
 	store: sessionstore.createSessionStore()
@@ -37,6 +38,7 @@ app.use(session({
 app.use('/', routes);
 app.use('/user', user);
 app.use('/login',login);
+app.use('/logout',logout);
 app.use('/greenherb',greenherb);
 
 /// catch 404 and forward to error handler

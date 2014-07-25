@@ -12,8 +12,8 @@ var db = new sqlite3.Database(path.resolve('model/db/db.sqlite3'));
 * 	|	|- displayName text
 * 	|	|- photos text
 * 	|	|- created date
-* 	|	|- last login date
-* 	|	 - nth login number
+* 	|	|- lastLogin date
+* 	|	 - nthLogin number
 * 	|
 * 	|- game
 * 		|- id text
@@ -23,6 +23,6 @@ var db = new sqlite3.Database(path.resolve('model/db/db.sqlite3'));
 */
 
 // もし、users tableが無い場合作成する
-db.run("create table if not exists users (id text, username text, displayName text, photos, created, lastLogi, nthLogin)");
+db.run("create table if not exists users (id text, username text, displayName text, photos, created, lastLogin, nthLogin)");
 db.run("create table if not exists game  (id text, score, color)");
 module.exports = db;
