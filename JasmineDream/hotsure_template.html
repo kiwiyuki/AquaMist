@@ -27,7 +27,7 @@
 		// 変数
 		var WIDTH = window.innerWidth;
 		var HEIGHT = window.innerHeight;
-		var scene, camera, renderer;
+		var scene, camera, renderer, stats;
 		var screenID = document.getElementById("screen");
 
 		// デザインを記述
@@ -74,6 +74,13 @@
 			// 自前のデザインを初期化
 			myDesign.init();
 
+			// fps表示
+			stats = new Stats();
+			stats.domElement.style.position = "absolute";
+			stats.domElement.style.top = "0px";
+			stats.domElement.style.left = "0px";
+			screenID.appendChild(stats.domElement);
+
 			// ロードメッセージ削除
 			screenID.removeChild(document.getElementById("load_msg"));
 
@@ -84,6 +91,7 @@
 		// アニメーションループ
 		function animate() {
 			// 状態更新
+			stats.update();
 			myDesign.update();
 
 			// レンダリング
