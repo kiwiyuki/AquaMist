@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<title>template</title>
+	<style>
+	html, body {
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		padding: 0;
+
+		overflow: hidden;
+		background: #111;
+		color: #eee;
+		text-align: center;
+	}
+	</style>
+</head>
+<body>
+	<div id="screen"><span id="load_msg">now loading...</span></div>
+
+	<script type="text/javascript" src="lib/three.min.js"></script>
+	<script src="lib/OrbitControls.js"></script>
+	<script type="text/javascript" src="lib/stats.min.js"></script>
+	<script>
+	(function() {
+		// 変数
+		var WIDTH = window.innerWidth;
+		var HEIGHT = window.innerHeight;
+		var scene, camera, renderer, cameraControls, stats;
+		var screenID = document.getElementById("screen");
+
+		// デザインを記述
+		this.myDesign = new function() {
+			// 変数定義
+			var axis;
+
+			return {
+				// 初期化
+				init : function() {
+					axis = new THREE.AxisHelper(500)
+					scene.add(axis);
+				},
+
+				// 状態更新
+				update : function() {
+					
+				}
+			};
+		}
+
+		// 初期化
+		function init() {
+			// シーン
+			scene = new THREE.Scene();
+
+			// カメラ
+			camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 1, 5000);
+			camera.position.set(0, 0, 1000);
+			camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+			// レンダラー
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize(WIDTH, HEIGHT);
+			renderer.setClearColor(0xffffff, 1);
+			screenID.appendChild(renderer.domElement);
+
+			// カメラコントロール
+			cameraControls = new THREE.OrbitControls(camera, renderer.domElement);
+
+			// 光源
+			var light = new THREE.DirectionalLight(0xffffff, 1);
+			light.position.set(WIDTH / 2, HEIGHT / 2, 1500);
+			// light.castShadow = true;
+			scene.add(light);
+			// 環境光
+			var ambient = new THREE.AmbientLight(0x550000, 1);
+			scene.add(ambient);
+
+			// イベント追加
+			window.addEventListener('resize', onWindowResize, false);
+
+			// 自前のデザインを初期化
+			myDesign.init();
+
+			// fps表示
+			stats = new Stats();
+			stats.domElement.style.position = "absolute";
+			stats.domElement.style.top = "0px";
+			stats.domElement.style.left = "0px";
+			screenID.appendChild(stats.domElement);
+
+			// ロードメッセージ削除
+			screenID.removeChild(document.getElementById("load_msg"));
+
+			// ループ開始
+			requestAnimationFrame(animate);
+		}
+
+		// アニメーションループ
+		function animate() {
+			// 状態更新
+			stats.update();
+			cameraControls.update();
+			myDesign.update();
+
+			// レンダリング
+			renderer.render(scene, camera);
+
+			requestAnimationFrame(animate);
+		}
+
+		// イベントリスナー
+		function onWindowResize(e) {
+			WIDTH = window.innerWidth;
+			HEIGHT = window.innerHeight;
+			renderer.setSize(WIDTH, HEIGHT);
+			camera.aspect = WIDTH / HEIGHT;
+			camera.updateProjectionMatrix();
+		}
+
+		init();
+
+	})();
+	</script>
+</body>
+</html>
