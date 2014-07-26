@@ -21,26 +21,33 @@
 	<div id="screen"><span id="load_msg">now loading...</span></div>
 
 	<script type="text/javascript" src="lib/three.min.js"></script>
+	<script src="lib/OrbitControls.js"></script>
 	<script type="text/javascript" src="lib/stats.min.js"></script>
 	<script>
 	(function() {
 		// 変数
 		var WIDTH = window.innerWidth;
 		var HEIGHT = window.innerHeight;
-		var scene, camera, renderer, stats;
+		var scene, camera, renderer, cameraControls, stats;
 		var screenID = document.getElementById("screen");
 
 		// デザインを記述
 		this.myDesign = new function() {
-			return {
-				init : function() {
+			// 変数定義
+			var axis;
 
+			return {
+				// 初期化
+				init : function() {
+					axis = new THREE.AxisHelper(500)
+					scene.add(axis);
 				},
 
+				// 状態更新
 				update : function() {
-
+					
 				}
-			}
+			};
 		}
 
 		// 初期化
@@ -58,6 +65,9 @@
 			renderer.setSize(WIDTH, HEIGHT);
 			renderer.setClearColor(0xffffff, 1);
 			screenID.appendChild(renderer.domElement);
+
+			// カメラコントロール
+			cameraControls = new THREE.OrbitControls(camera, renderer.domElement);
 
 			// 光源
 			var light = new THREE.DirectionalLight(0xffffff, 1);
@@ -92,6 +102,7 @@
 		function animate() {
 			// 状態更新
 			stats.update();
+			cameraControls.update();
 			myDesign.update();
 
 			// レンダリング
