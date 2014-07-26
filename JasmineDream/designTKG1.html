@@ -4,10 +4,10 @@
 	<meta charset="UTF-8">
 	<title>Layout</title>
 	<style>
-		body {
-			padding: 0;
-			margin: 0;
-		}
+	body {
+		padding: 0;
+		margin: 0;
+	}
 	</style>
 </head>
 <body>
@@ -95,9 +95,29 @@
 		// mydesign
 
 		function mydesign() {
-			var g = new THREE.BoxGeometry(200,200,200);
-			var m = new THREE.MeshBasicMaterial({color: "red",wireframe: true});
-			var c = new THREE.Mesh(g,m);
+			// var g = new THREE.PolyhedronGeometry(v,f);
+			var g = new THREE.Geometry();
+			g.vertices.push(new THREE.Vector3(0,0,0));
+			g.vertices.push(new THREE.Vector3(500,0,0));
+			g.vertices.push(new THREE.Vector3(0,500,0));
+			g.vertices.push(new THREE.Vector3(0,0,0));
+			g.vertices.push(new THREE.Vector3(0,0,500));
+			g.vertices.push(new THREE.Vector3(0,500,0));
+			g.vertices.push(new THREE.Vector3(0,0,0));
+			g.vertices.push(new THREE.Vector3(500,0,0));
+			g.vertices.push(new THREE.Vector3(0,0,500));
+			g.vertices.push(new THREE.Vector3(0,0,0));
+			var m = new THREE.LineBasicMaterial({
+				color: "pink",
+				// opacity: 1,
+				lineWidth: 5
+			});
+			// var g = new THREE.BoxGeometry(200,200,200);
+			// var m = new THREE.MeshBasicMaterial({color: "red",wireframe: true,
+				// wireframeLinewidth: 5
+			// });
+			var c = new THREE.Line(g,m);
+			// var c = new THREE.Mesh(g,m);
 			c.position.set(0,0,0);
 			return c;	
 		} 
