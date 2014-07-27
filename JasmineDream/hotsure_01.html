@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<title>hotsure_01</title>
+	<style>
+	html, body {
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		padding: 0;
+
+		overflow: hidden;
+		background: #111;
+		color: #eee;
+		text-align: center;
+	}
+	</style>
+</head>
+<body>
+	<div id="screen"><span id="load_msg">now loading...</span></div>
+
+	<script type="text/javascript" src="lib/three.min.js"></script>
+	<script src="lib/OrbitControls.js"></script>
+	<script type="text/javascript" src="lib/stats.min.js"></script>
+	<script>
+	(function() {
+		// 変数
+		var WIDTH = window.innerWidth;
+		var HEIGHT = window.innerHeight;
+		var scene, camera, renderer, cameraControls, stats;
+		var screenID = document.getElementById("screen");
+
+		var FireworksTrain = function(position) {
+			var size = 40;
+			var coreRotateAngle  = Math.PI / 180;
+
+			// 全体のメッシュ
+			var generalMesh = new THREE.Object3D();
+			generalMesh.position = position || new THREE.Vector3();
+
+			// コア
+			var core = (function() {
+				var g = new THREE.SphereGeometry(size, 6, 6);
+				var m = new THREE.MeshLambertMaterial({color : 0xff0000, wireframe : false});
+
+				return new THREE.Mesh(g, m);
+			})();
+			generalMesh.add(core);
+
+			// ボックス群
+			var groupBox = new THREE.Object3D();
+			for (var i = 1; i < 6; i++) {
+				var g = new THREE.BoxGeometry(size, size * (i + 1), size);
+				var m = new THREE.MeshLambertMaterial({color : 0xeeeeee, wireframe : false});
+				var box = new THREE.Mesh(g, m);
+				var boxSym = box.clone();
+				var x = size * (6 + i) / 2 * Math.cos(Math.PI * i / 6);
+				var y = size * (6 + i) / 2 * Math.sin(Math.PI * i / 6);
+
+				box.position.set(x, y, 0);
+				box.rotation.z = Math.atan2(y, x) + Math.PI / 2;
+
+				groupBox.add(box);
+
+				boxSym.position.set(x, -y, 0);
+				boxSym.rotation.z = Math.atan2(-y, x) + Math.PI / 2;
+
+				groupBox.add(boxSym);
+			}
+			generalMesh.add(groupBox);
+
+			// 追加ボックス群
+			// groupBox = groupBox.clone();
+			// groupBox.rotation.x = Math.PI / 2;
+			// generalMesh.add(groupBox);
+
+			// 尻尾
+			var tail = (function() {
+				var g = new THREE.BoxGeometry(size, size * 9, size);
+				var m = new THREE.MeshLambertMaterial({color : 0xdd0000, wireframe : false});
+				var box = new THREE.Mesh(g, m);
+				var x = -size * 7;
+				var y = 0;
+
+				box.position.set(x, y, 0);
+				box.rotation.z = Math.atan2(y, x) + Math.PI / 2;
+
+				generalMesh.add(box);
+			})();
+
+			// これはこれで面白い
+			// for (var i = 0; i < 6; i++) {
+			// 	var g = new THREE.BoxGeometry(size, size * i + size, size);
+			// 	var m = new THREE.MeshLambertMaterial({color : 0xeeeeee});
+			// 	var box = new THREE.Mesh(g, m);
+			// 	var x = size * 4 * Math.cos(Math.PI * i / 6);
+			// 	var y = size * 4 * Math.sin(Math.PI * i / 6);
+
+			// 	box.position.set(x, y, 0);
+			// 	box.rotation.z = Math.atan2(x, y);
+
+			// 	generalMesh.add(box);
+			// }
+
+			return {
+				mesh : generalMesh,
+				update : function() {
+					// コアの回転
+					core.rotation.x += coreRotateAngle;
+					core.rotation.y += coreRotateAngle;
+					core.rotation.z += coreRotateAngle;
+
+					// 全体の回転
+					generalMesh.rotation.x += coreRotateAngle;
+				}
+			}
+		}
+
+		// デザインを記述
+		this.myDesign = new function() {
+			// 変数定義
+			var axis;
+			var fwt;
+
+			return {
+				// 初期化
+				init : function() {
+					axis = new THREE.AxisHelper(500);
+					scene.add(axis);
+
+					fwt = new FireworksTrain();
+					scene.add(fwt.mesh);
+				},
+
+				// 状態更新
+				update : function() {
+					fwt.update();
+				}
+			};
+		}
+
+		// 初期化
+		function init() {
+			// シーン
+			scene = new THREE.Scene();
+
+			// カメラ
+			camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 1, 5000);
+			camera.position.set(0, 0, 1000);
+			camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+			// レンダラー
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize(WIDTH, HEIGHT);
+			renderer.setClearColor(0x111111, 1);
+			screenID.appendChild(renderer.domElement);
+
+			// カメラコントロール
+			cameraControls = new THREE.OrbitControls(camera, renderer.domElement);
+
+			// 光源
+			var light = new THREE.DirectionalLight(0xffffff, 1);
+			light.position.set(WIDTH / 2, HEIGHT / 2, 1500);
+			// light.castShadow = true;
+			scene.add(light);
+			// 環境光
+			// var ambient = new THREE.AmbientLight(0x550000, 1);
+			// scene.add(ambient);
+
+			// イベント追加
+			window.addEventListener('resize', onWindowResize, false);
+
+			// 自前のデザインを初期化
+			myDesign.init();
+
+			// fps表示
+			stats = new Stats();
+			stats.domElement.style.position = "absolute";
+			stats.domElement.style.top = "0px";
+			stats.domElement.style.left = "0px";
+			screenID.appendChild(stats.domElement);
+
+			// ロードメッセージ削除
+			screenID.removeChild(document.getElementById("load_msg"));
+
+			// ループ開始
+			requestAnimationFrame(animate);
+		}
+
+		// アニメーションループ
+		function animate() {
+			// 状態更新
+			stats.update();
+			cameraControls.update();
+			myDesign.update();
+
+			// レンダリング
+			renderer.render(scene, camera);
+
+			requestAnimationFrame(animate);
+		}
+
+		// イベントリスナー
+		function onWindowResize(e) {
+			WIDTH = window.innerWidth;
+			HEIGHT = window.innerHeight;
+			renderer.setSize(WIDTH, HEIGHT);
+			camera.aspect = WIDTH / HEIGHT;
+			camera.updateProjectionMatrix();
+		}
+
+		init();
+
+	})();
+	</script>
+</body>
+</html>
