@@ -25,76 +25,39 @@
 	<script src="lib/ConvexGeometry.js"></script>
 	<script type="text/javascript" src="lib/stats.min.js"></script>
 	<script>
+	// "use strict";
 	(function() {
 		// 変数
 		var WIDTH = window.innerWidth;
 		var HEIGHT = window.innerHeight;
 		var scene, camera, renderer, cameraControls, stats;
 		var screenID = document.getElementById("screen");
-		var XXX = function (pos) {	
-			var xxx = new THREE.Object3D();
-			xxx.position = pos || new THREE.Vector3();
-			var meshSetting = { 
-				color: 0xffffff, 
-				wireframe:true, 
-				wireframeLinewidth:5
-			};
-			var body = new THREE.Object3D();
-			var bodyVertices = [
-				new THREE.Vector3(-10,100,0),
-				new THREE.Vector3(-10,-100,-50),
-				new THREE.Vector3(-110,-60,0),
-				new THREE.Vector3(-10,-100,50)
-			];	
-			for(var i = 0;i < 2; i++) {
-				var b = makeMesh(THREE.ConvexGeometry,bodyVertices,THREE.MeshPhongMaterial,meshSetting);
-				b.rotateY(Math.PI*i);
-				body.add(b);
-			}
-			xxx.add(body);
-			var funnel = new THREE.Object3D();
-			var funnelL = new THREE.Object3D();
-			var funnelR = new THREE.Object3D();
-			var funnelVertices = [
-				new THREE.Vector3(0,0,0),
-				new THREE.Vector3(20,-50,0),
-				new THREE.Vector3(0,-50,20),
-				new THREE.Vector3(-20,-50,0),
-				new THREE.Vector3(0,-50,-20),
-				new THREE.Vector3(0,-80,0),
-			];
-			var funnelAxis = [
-				new THREE.Vector3(1,1,0).normalize(),
-				new THREE.Vector3(1,-1,0).normalize()
-			];
-			for (var i = 0; i < 4; i++) {
-				var f = makeMesh(THREE.ConvexGeometry,funnelVertices,THREE.MeshPhongMaterial,meshSetting);
-				f.position.set(150*Math.sin(i*Math.PI),40,150*Math.cos(i*Math.PI));
-				if(i > 1) {
-					f.rotateOnAxis(funnelAxis[0],-Math.PI/2);
-					funnelL.add(f);
-				} else {
-					funnelR.add(f);
-				}
-			}
-			funnelL.rotateOnAxis(funnelAxis[0], Math.PI/2);
-		
-			funnel.add(funnelL);
-			funnel.add(funnelR);
-			xxx.add(funnel);
-			var rotateRadian = Math.PI / 65;
+		var Torus = function (pos) {	
+			var torus = new THREE.Object3D();
+			var underTorus = new THREE.Mesh(
+					new THREE.TorusGeometry(100,30,5,100),
+					new THREE.MeshLambertMaterial({ color: 0xffffff })
+				);
+			var middleTorus =  new THREE.Mesh(
+					new THREE.TorusGeometry(150,20,5,100),
+					new THREE.MeshPhongMaterial({ color: 0xff0000 })
+				);
+			var topTorus = new THREE.Mesh(
+					new THREE.TorusGeometry(200,30,5,100),
+					new THREE.MeshPhongMaterial({ color: 0xffffff })
+				);
+			torus.add(underTorus);
+			torus.add(middleTorus);
+			torus.add(topTorus);
+			var underAxis = new THREE.Vector3(1,-1,0).normalize();
+			var middleAxis = new THREE.Vector3(1,1,0).normalize();
+			var topAxis = new THREE.Vector3(1,1,1).normalize();
 			return {
-				mesh: xxx,
+				mesh: torus	,
 				update: function() {
-					funnelL.rotateOnAxis(funnelAxis[0],rotateRadian);
-					funnelL.children[0].rotateOnAxis(funnelAxis[0],-rotateRadian);
-					funnelL.children[1].rotateOnAxis(funnelAxis[0],-rotateRadian);
-					funnelR.rotateOnAxis(funnelAxis[1],rotateRadian);
-					funnelR.children[0].rotateOnAxis(funnelAxis[1],-rotateRadian);
-					funnelR.children[1].rotateOnAxis(funnelAxis[1],-rotateRadian);
-
-					// funnelR.rotateY(Math.PI/90);
-					// funnelL.rotateY(-Math.PI/90);
+					underTorus.rotateOnAxis(underAxis,Math.PI/90);
+					middleTorus.rotateOnAxis(middleAxis,Math.PI/180);
+					topTorus.rotateOnAxis(topAxis,Math.PI/90);
 				}
 
 			}
@@ -107,19 +70,19 @@
 			//赤 x 
 			//緑 y
 			//青 z
-			var xxx
+			var torus;
 			return {
 				// 初期化
 				init : function() {
 					axis = new THREE.AxisHelper(500)
 					scene.add(axis);
-					xxx = new XXX();
-					scene.add(xxx.mesh);
+					torus = new Torus();
+					scene.add(torus.mesh);
 				},
 
 				// 状態更新
 				update : function() {
-					xxx.update();
+					torus.update();
 				} 
 			};
 		}
@@ -149,8 +112,8 @@
 			// light.castShadow = true;
 			scene.add(light);
 			// 環境光
-			var ambient = new THREE.AmbientLight(0x550000, 1);
-			scene.add(ambient);
+			// var ambient = new THREE.AmbientLight(0xff0000, 1);
+			// scene.add(ambient);
 
 			// イベント追加
 			window.addEventListener('resize', onWindowResize, false);
@@ -193,12 +156,7 @@
 			camera.aspect = WIDTH / HEIGHT;
 			camera.updateProjectionMatrix();
 		}
-		function makeMesh(geometryType, geometryArgs, meshType, meshArgs) {
-			return new THREE.Mesh(
-				new geometryType(geometryArgs),new meshType(meshArgs)
-				);
-		}
-
+		
 		init();
 
 	})();

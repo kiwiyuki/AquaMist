@@ -31,9 +31,9 @@
 		var HEIGHT = window.innerHeight;
 		var scene, camera, renderer, cameraControls, stats;
 		var screenID = document.getElementById("screen");
-		var XXX = function (pos) {	
-			var xxx = new THREE.Object3D();
-			xxx.position = pos || new THREE.Vector3();
+		var YYY = function (pos) {	
+			var yyy = new THREE.Object3D();
+			yyy.position = pos || new THREE.Vector3();
 			var meshSetting = { 
 				color: 0xffffff, 
 				wireframe:true,	
@@ -42,9 +42,9 @@
 			var body = new THREE.Object3D();
 			var bodyVertices = [
 				new THREE.Vector3(0,0,0),
-				new THREE.Vector3(0,-200,80),
-				new THREE.Vector3(0,-200,-80),
-				new THREE.Vector3(40,-300,0),
+				new THREE.Vector3(0,-200,40),
+				new THREE.Vector3(0,-200,-40),
+				// new THREE.Vector3(40,-300,0),
 				new THREE.Vector3(80,-320,0)// 320/80 = 40 y = -40x
 			];	
 			for(var i = 0;i < 2; i++) {
@@ -56,20 +56,20 @@
 			var finVertices = [
 				new THREE.Vector3(20,-80,0),
 				new THREE.Vector3(80,-320,0),
-				new THREE.Vector3(100,-200,0)
+				new THREE.Vector3(140,-280,0)
 			];
 			for (var i = 0; i < 2; i++) {
 				var f = makeMesh(THREE.ConvexGeometry,finVertices,THREE.MeshPhongMaterial,meshSetting);
 				f.rotateY(Math.PI*i);
 				fin.add(f);
 			};
-			xxx.add(body);
-			xxx.add(fin);
-			xxx.position.set(0,160,0);
+			yyy.add(body);
+			yyy.add(fin);
+			yyy.position.set(0,160,0);
 			return {
-				mesh: xxx,
+				mesh: yyy,
 				update: function() {
-					// xxx.rotateY(Math.PI/180);
+					// yyy.rotateY(Math.PI/180);
 				}
 
 			}
@@ -82,19 +82,19 @@
 			//赤 x 
 			//緑 y
 			//青 z
-			var xxx
+			var yyy
 			return {
 				// 初期化
 				init : function() {
 					axis = new THREE.AxisHelper(500)
 					scene.add(axis);
-					xxx = new XXX();
-					scene.add(xxx.mesh);
+					yyy = new YYY();
+					scene.add(yyy.mesh);
 				},
 
 				// 状態更新
 				update : function() {
-					xxx.update();
+					yyy.update();
 				} 
 			};
 		}
@@ -171,7 +171,7 @@
 		function makeMesh(geometryType, geometryArgs, meshType, meshArgs) {
 			return new THREE.Mesh(
 				new geometryType(geometryArgs),new meshType(meshArgs)
-				);
+			);
 		}
 
 		init();
