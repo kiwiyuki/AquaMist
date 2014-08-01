@@ -103,7 +103,7 @@
 			var texture = new THREE.Texture(canvas);
 			texture.needsUpdate = true;
 			var g = new THREE.BoxGeometry(size, size, size);
-			var m = new THREE.MeshLambertMaterial({map : texture, wireframe : false});
+			var m = new THREE.MeshPhongMaterial({map : texture, metal : true, wireframe : false});
 			var box = new THREE.Mesh(g, m);
 			box.position = position || new THREE.Vector3();
 			box.rotation.x += Math.PI * Math.random();
