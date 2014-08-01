@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<title>hotsure_04</title>
+	<style>
+	html, body {
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		padding: 0;
+
+		overflow: hidden;
+		background: #111;
+		color: #eee;
+		text-align: center;
+	}
+
+	#canvas {
+		position: absolute;
+		top: 60px;
+		left: 0px;
+
+		border: solid 1px black;
+		background: #fff;
+	}
+	</style>
+</head>
+<body>
+	<div id="screen"><span id="load_msg">now loading...</span></div>
+	<canvas id="canvas"></canvas>
+	
+
+	<script type="text/javascript" src="lib/three.min.js"></script>
+	<script src="lib/OrbitControls.js"></script>
+	<script type="text/javascript" src="lib/stats.min.js"></script>
+	<script>
+	(function() {
+		// 変数
+		var WIDTH = window.innerWidth;
+		var HEIGHT = window.innerHeight;
+		var scene, camera, renderer, cameraControls, stats;
+		var screenID = document.getElementById("screen");
+
+		// キャンバス
+		var canvas = document.getElementById("canvas");
+		var ctx = canvas.getContext("2d");
+		canvas.width = 360;
+		canvas.height = 180;
+		var canvasTexture = new THREE.Texture(canvas);
+
+		var LifeGame = function(width, height, ctx) {
+			// セルの大きさ
+			var cellSize = 2;
+
+			// セルの縦横の各個数
+			var cellNumX = width / cellSize;
+			var cellNumY = height / cellSize;
+
+			// セル格納配列
+			var cells = [];
+			var tempCells = [];
+
+			// 配列初期化
+			for(var j = 0; j < cellNumY; j++){
+				cells[j] = [];
+				tempCells[j] = [];
+
+				for(var i = 0; i < cellNumX; i++){
+					cells[j][i] = Math.random() < 0.6;
+					tempCells[j][i] = false;
+				}	
+			}
+
+			// グライダー
+			// var p = 0;
+			// cells[p][p] = true;
+			// cells[p][p + 1] = true;
+			// cells[p][p + 2] = true;
+			// cells[p + 1][p + 2] = true;
+			// cells[p + 2][p + 1] = true;
+
+			// 走査用配列
+			var vecX = [-1, 0, 1, 1, 1, 0, -1, -1];
+			var vecY = [-1, -1, -1, 0, 1, 1, 1, 0];
+
+			// 周りで生きているセルを数え上げる
+			var aroundAlive = function(x, y) {
+				var aliveCell = 0;
+				
+				for(var i = 0; i < 8; i++) {
+					var indexX = x + vecX[i];
+					var indexY = y + vecY[i];
+
+					if(indexX < 0) {
+						indexX = cellNumX - 1;
+					} else if(indexX >= cellNumX) {
+						indexX = 0;
+					}
+
+					if(indexY < 0) {
+						indexY = 0;
+						indexX = indexX + cellNumX / 2;
+						indexX = indexX >= cellNumX ? indexX - cellNumX : indexX;
+					} else if(indexY >= cellNumY) {
+						indexY = cellNumY - 1;
+						indexX = indexX + cellNumX / 2;
+						indexX = indexX >= cellNumX ? indexX - cellNumX : indexX;
+					}
+
+					if(cells[indexY][indexX]) {
+						aliveCell++;
+					}
+				}
+
+				return aliveCell;
+			};
+
+			return {
+				update : function() {
+					// 各セルについて状態更新
+					for(var j = 0; j < cellNumY; j++){
+						for(var i = 0; i < cellNumX; i++){
+							// 生死判定
+							var aliveCell = aroundAlive(i, j);
+
+							if(aliveCell == 3) {
+								tempCells[j][i] = true;
+							} else if(cells[j][i] & aliveCell == 2) {
+								tempCells[j][i] = true;
+							} else {
+								tempCells[j][i] = false;
+							}
+						}	
+					}
+
+					// 次状態を cells へコピー
+					for(var j = 0; j < cellNumY; j++){
+						for(var i = 0; i < cellNumX; i++){
+							cells[j][i] = tempCells[j][i];
+						}	
+					}
+				},
+
+				draw : function() {
+					// var py = 0;
+
+					for(var j = 0; j < cellNumY; j++){
+						// var phi = (j + 1) * cellSize * (2 * Math.PI / height) - 1;
+						// var y = Math.log(Math.PI / 4 + phi / 2) * height;
+
+						for(var i = 0; i < cellNumX; i++){
+							if(cells[j][i]) {
+								ctx.fillRect(i * cellSize, j * cellSize, cellSize, cellSize);
+
+								// ctx.fillRect(i * cellSize, py, cellSize, y - py);
+							}
+						}
+						// py = y;	
+					}
+				}
+			};
+		};
+
+		var lg = new LifeGame(canvas.width, canvas.height, ctx);
+
+		ctx.fillStyle = "black";
+		lg.draw();
+		setInterval(function() {
+			lg.update();
+
+			// 描画
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			lg.draw();
+			canvasTexture.needsUpdate = true;
+		}, 100);
+
+		
+		// デザインを記述
+		this.myDesign = new function() {
+			// 変数定義
+
+			return {
+				// 初期化
+				init : function() {
+					// 外殻
+					var g = new THREE.SphereGeometry(1000, 60, 60);
+					var m = new THREE.MeshBasicMaterial({map : canvasTexture, transparent : true});
+					var shell = new THREE.Mesh(g, m);
+					shell.scale.x = -1;
+
+					scene.add(shell);
+
+					// 中心球（ライフゲーム）
+					var g = new THREE.SphereGeometry(60, 60, 60);
+					var m = new THREE.MeshBasicMaterial({map : canvasTexture, transparent : true});
+					var centerSphere = new THREE.Mesh(g, m);
+					scene.add(centerSphere);
+					
+					// 中心球（土台）
+					var g = new THREE.SphereGeometry(55, 60, 60);
+					var m = new THREE.MeshLambertMaterial({color : 0xeeeeee});
+					var core = new THREE.Mesh(g, m);
+					scene.add(core);
+				},
+
+				// 状態更新
+				update : function() {
+				}
+			};
+		}
+
+		// 初期化
+		function init() {
+			// シーン
+			scene = new THREE.Scene();
+
+			// カメラ
+			camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 1, 2000);
+			camera.position.set(0, 0, 500);
+			camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+			// レンダラー
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize(WIDTH, HEIGHT);
+			renderer.setClearColor(0xffffff, 1);
+			screenID.appendChild(renderer.domElement);
+
+			// カメラコントロール
+			cameraControls = new THREE.OrbitControls(camera, renderer.domElement);
+			cameraControls.noZoom = true;
+
+			// 光源
+			var light = new THREE.DirectionalLight(0xffffff, 1);
+			light.position.set(WIDTH / 2, HEIGHT / 2, 1500);
+			scene.add(light);
+
+			// 環境光
+			var ambient = new THREE.AmbientLight(0x555555, 1);
+			scene.add(ambient);
+
+			// イベント追加
+			window.addEventListener('resize', onWindowResize, false);
+
+			// 自前のデザインを初期化
+			myDesign.init();
+
+			// fps表示
+			stats = new Stats();
+			stats.domElement.style.position = "absolute";
+			stats.domElement.style.top = "0px";
+			stats.domElement.style.left = "0px";
+			screenID.appendChild(stats.domElement);
+
+			// ロードメッセージ削除
+			screenID.removeChild(document.getElementById("load_msg"));
+
+			// ループ開始
+			requestAnimationFrame(animate);
+		}
+
+		// アニメーションループ
+		function animate() {
+			// 状態更新
+			stats.update();
+			cameraControls.update();
+			myDesign.update();
+
+			// レンダリング
+			renderer.render(scene, camera);
+
+			requestAnimationFrame(animate);
+		}
+
+		// イベントリスナー
+		function onWindowResize(e) {
+			WIDTH = window.innerWidth;
+			HEIGHT = window.innerHeight;
+			renderer.setSize(WIDTH, HEIGHT);
+			camera.aspect = WIDTH / HEIGHT;
+			camera.updateProjectionMatrix();
+		}
+
+		init();
+
+	})();
+	</script>
+</body>
+</html>
