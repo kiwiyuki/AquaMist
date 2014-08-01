@@ -19,11 +19,11 @@
 </head>
 <body>
 	<div id="screen"><span id="load_msg">now loading...</span></div>
-
+	<div id="gui"></div>
 	<script type="text/javascript" src="lib/three.min.js"></script>
-	<script src="lib/OrbitControls.js"></script>
-	<script src="lib/ConvexGeometry.js"></script>
+	<script type="text/javascript" src="lib/OrbitControls.js"></script>
 	<script type="text/javascript" src="lib/stats.min.js"></script>
+	<script type="text/javascript" src="lib/dat.gui.min.js"></script>
 	<script>
 	(function() {
 		// 変数
@@ -31,75 +31,35 @@
 		var HEIGHT = window.innerHeight;
 		var scene, camera, renderer, cameraControls, stats;
 		var screenID = document.getElementById("screen");
-		var YYY = function (pos) {	
-			var yyy = new THREE.Object3D();
-			yyy.position = pos || new THREE.Vector3();
-			var meshSetting = { 
-				color: 0xffffff, 
-				wireframe:true,	
-				wireframeLinewidth:10,
-				vertexColors: "blue"
-			};
-			var body = new THREE.Object3D();
-			var bodyVertices = [
-				new THREE.Vector3(0,0,0),
-				new THREE.Vector3(0,-200,40),
-				new THREE.Vector3(0,-200,-40),
-				// new THREE.Vector3(40,-300,0),
-				new THREE.Vector3(80,-320,0)// 320/80 = 40 y = -40x
-			];	
-			for(var i = 0;i < 2; i++) {
-				var b = makeMesh(THREE.ConvexGeometry,bodyVertices,THREE.MeshPhongMaterial,meshSetting);
-				b.rotateY(Math.PI*i);
-				body.add(b);
-			}
-			var fin = new THREE.Object3D();
-			var finVertices = [
-				new THREE.Vector3(20,-80,0),
-				new THREE.Vector3(80,-320,0),
-				new THREE.Vector3(140,-280,0)
-				// new THREE.Vector3(40,-160,0),
-				// new THREE.Vector3(80,-320,0),
-				// new THREE.Vector3(120,-100,0)
-			];
-			for (var i = 0; i < 2; i++) {
-				var f = makeMesh(THREE.ConvexGeometry,finVertices,THREE.MeshPhongMaterial,meshSetting);
-				f.rotateY(Math.PI*i);
-				fin.add(f);
-			};
-			yyy.add(body);
-			yyy.add(fin);
-			yyy.position.set(0,160,0);
-			return {
-				mesh: yyy,
-				update: function() {
-					// yyy.rotateY(Math.PI/180);
-				}
-
-			}
-
-		}
 		// デザインを記述
+		var Cylinder = function (pos) {
+			var cylinder = new THREE.Mesh(
+					new THREE.CylinderGeometry(10),
+					new THREE.MeshLambertMaterial({ color: 0xff0000 })
+				);
+			return {
+				mesh: cylinder,
+				update: function () {
+					cylinder.rotateY(Math.PI/180);
+				}
+			};
+		};
 		this.myDesign = new function() {
 			// 変数定義
-			var axis;
-			//赤 x 
-			//緑 y
-			//青 z
-			var yyy
+			var cylinder;
 			return {
 				// 初期化
 				init : function() {
-					axis = new THREE.AxisHelper(500)
-					scene.add(axis);
-					yyy = new YYY();
-					scene.add(yyy.mesh);
+					cylinder = new Cylinder();
+					scene.add(cylinder.mesh);
 				},
-
+				getObject: function() {
+					return cylinder;
+				},
 				// 状態更新
 				update : function() {
-					yyy.update();
-				} 
+					cylinder.update();
+				}
 			};
 		}
 
@@ -116,7 +76,7 @@
 			// レンダラー
 			renderer = new THREE.WebGLRenderer();
 			renderer.setSize(WIDTH, HEIGHT);
-			renderer.setClearColor(0x000000, 1);
+			renderer.setClearColor(0xffffff, 1);
 			screenID.appendChild(renderer.domElement);
 
 			// カメラコントロール
@@ -128,7 +88,7 @@
 			// light.castShadow = true;
 			scene.add(light);
 			// 環境光
-			var ambient = new THREE.AmbientLight(0xff0000, 1);
+			var ambient = new THREE.AmbientLight(0x550000, 1);
 			scene.add(ambient);
 
 			// イベント追加
@@ -137,12 +97,32 @@
 			// 自前のデザインを初期化
 			myDesign.init();
 
+			//軸表示
+			var axis = new THREE.AxisHelper(500);
+			scene.add(axis);
+
 			// fps表示
 			stats = new Stats();
 			stats.domElement.style.position = "absolute";
 			stats.domElement.style.top = "0px";
 			stats.domElement.style.left = "0px";
 			screenID.appendChild(stats.domElement);
+
+			// GUIセッティング
+			var guiSetting = new GUIsetting();
+			var gui = new dat.GUI({ autoPlace: false });
+			gui.domElement.style.position = "absolute";
+			gui.domElement.style.top = "50px";
+			gui.domElement.style.left = "0px";
+			screenID.appendChild(gui.domElement);
+
+			gui.add(guiSetting, "axis").onChange(function (value) {
+				value ? scene.add(axis) : scene.remove(axis);
+			});
+			// myDesign.getObject().mesh.material.wireframeLinewidth = 5;
+			gui.add(guiSetting, "wireframe").onChange(function (value) {
+				myDesign.getObject().mesh.material.wireframe = value;
+			});
 
 			// ロードメッセージ削除
 			screenID.removeChild(document.getElementById("load_msg"));
@@ -172,11 +152,12 @@
 			camera.aspect = WIDTH / HEIGHT;
 			camera.updateProjectionMatrix();
 		}
-		function makeMesh(geometryType, geometryArgs, meshType, meshArgs) {
-			return new THREE.Mesh(
-				new geometryType(geometryArgs),new meshType(meshArgs)
-			);
+		
+		var GUIsetting = function() {
+			this.axis = true;	
+			this.wireframe = false;
 		}
+
 
 		init();
 
