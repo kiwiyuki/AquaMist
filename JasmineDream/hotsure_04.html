@@ -143,20 +143,20 @@
 				},
 
 				draw : function() {
-					// var py = 0;
+					var py = 0;
 
 					for(var j = 0; j < cellNumY; j++){
-						// var phi = (j + 1) * cellSize * (2 * Math.PI / height) - 1;
-						// var y = Math.log(Math.PI / 4 + phi / 2) * height;
+						var theta = (j + 1) * Math.PI / cellNumY;
+						var y = cellNumY * (1 - Math.cos(theta));
 
 						for(var i = 0; i < cellNumX; i++){
 							if(cells[j][i]) {
-								ctx.fillRect(i * cellSize, j * cellSize, cellSize, cellSize);
+								// ctx.fillRect(i * cellSize, j * cellSize, cellSize, cellSize);
 
-								// ctx.fillRect(i * cellSize, py, cellSize, y - py);
+								ctx.fillRect(i * cellSize, py, cellSize, y - py);
 							}
 						}
-						// py = y;	
+						py = y;	
 					}
 				}
 			};
