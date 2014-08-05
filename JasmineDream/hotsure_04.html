@@ -193,7 +193,7 @@
 
 					// 中心球（ライフゲーム）
 					var g = new THREE.SphereGeometry(60, 60, 60);
-					var m = new THREE.MeshBasicMaterial({map : canvasTexture, transparent : true});
+					var m = new THREE.MeshBasicMaterial({map : canvasTexture, transparent : true, side : THREE.DoubleSide});
 					var centerSphere = new THREE.Mesh(g, m);
 					scene.add(centerSphere);
 					
