@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 	<meta charset="UTF-8">
-	<title>hotsure_07</title>
+	<title>hotsure_08</title>
 	<style>
 	html, body {
 		width: 100%;
@@ -28,12 +28,11 @@
 </head>
 <body>
 	<div id="screen"><span id="load_msg">now loading...</span></div>
-	<canvas id="canvas"></canvas>
-
+	
 	<script type="text/javascript" src="lib/three.min.js"></script>
 	<script src="lib/OrbitControls.js"></script>
 	<script type="text/javascript" src="lib/stats.min.js"></script>
-	<script type="text/javascript" src="Player.js"></script>
+	<script type="text/javascript" src="soundEffect.js"></script>
 	<script>
 	(function() {
 		// 変数
@@ -43,101 +42,58 @@
 		var screenID = document.getElementById("screen");
 		var bgColor = 0x333333;
 
-		// キャンバス
-		this.canvas = document.getElementById("canvas");
-		var ctx = canvas.getContext("2d");
-		canvas.width = 30;
-		canvas.height = 30;
-		var canvasTexture = new THREE.Texture(canvas);
-		
-		var HugeBox = function() {
-			var g = new THREE.BoxGeometry(150, 150, 800);
-			var m = new THREE.MeshLambertMaterial({color : 0x222222});
-			var box = new THREE.Mesh(g, m);
-
-			return box;
-		};
-
-		var BackgroundObject = function() {
-			var bg = new THREE.Object3D();
-			var hugeBoxNum = 12;
-			var d = 0.95;
-			var counter = 0;
-
-			for (var j = 0; j < hugeBoxNum; j++) {
-				for (var i = 0; i < hugeBoxNum; i++) {
-					var hugeBox = new HugeBox();
-					hugeBox.position.set((i - hugeBoxNum / 2) * 200, (j - hugeBoxNum / 2) * 200, -900);
-					hugeBox.flag = Math.random() < 0.5;
-
-					bg.add(hugeBox);
-				}
-			}
-
-			return {
-				mesh : bg,
-				update : function() {
-					bg.children.forEach(function(hugeBox) {
-						if(hugeBox.flag) {
-							hugeBox.position.z = hugeBox.position.z * d - 900 * (1 - d);
-						} else {
-							hugeBox.position.z = hugeBox.position.z * d - 1100 * (1 - d);
-						}
-					});
-
-					counter++;
-					if(counter > 180) {
-						bg.children.forEach(function(hugeBox) {
-							hugeBox.flag = Math.random() < 0.5;
-						});
-
-						counter = 0;
-						console.log(counter);
-					}
-				}
-			};
-		}
-
 		// デザインを記述
 		this.myDesign = new function() {
 			// 変数定義
-			var background;
-			var player;
-			var triangle;
+			var core = new THREE.Object3D();
+
+			var onKeyDown = function(e) {
+				switch(e.keyCode) {
+					case 37: // key "Left"
+					e.preventDefault();
+					(new Audio(seShot)).play();
+					break;
+
+					case 38: // key "Up"
+					e.preventDefault();
+					(new Audio(seExplosion)).play();
+					break;
+
+					case 39: // key "Right"
+					e.preventDefault();
+					(new Audio(seShot)).play();
+					break;
+
+					case 40: // key "Down"
+					e.preventDefault();
+					(new Audio(seExplosion)).play();
+					break;
+				}
+
+			};
 
 			return {
 				// 初期化
 				init : function() {
-					background = new BackgroundObject();
-					scene.add(background.mesh);
+					for (var i = 0; i < 8; i++) {
+						var ix = i & 1;
+						var iy = (i >> 1) & 1;
+						var iz = (i >> 2) & 1;
+						var g = new THREE.BoxGeometry(4, 4, 4);
+						var m = new THREE.MeshLambertMaterial({color : 0xff0000});
+						var box = new THREE.Mesh(g, m);
+						box.position.set(3 - 6 * ix, 3 - 6 * iy, 3 - 6 * iz);
+						core.add(box);
 
-					player = new Player();
-					scene.add(player.mesh);
+						// イベントリスナーセット
+						window.addEventListener('keydown', onKeyDown, false);
+					}
 
-					var g = new THREE.CircleGeometry(5, 3, Math.PI / 2);
-					var m = new THREE.MeshBasicMaterial({color : 0xffffff, side : THREE.BackSide});
-					triangle = new THREE.Object3D();
-					triangle.add(new THREE.Mesh(g, m));
-					m = new THREE.MeshBasicMaterial({color : 0x000000});
-					triangle.add(new THREE.Mesh(g, m));
-					scene.add(triangle);
+					scene.add(core);
 				},
 
 				// 状態更新
 				update : function() {
-					player.update();
-					background.update();
-
-					triangle.rotation.x += 0.1;
-					triangle.rotation.y += 0.09;
-
-					// カメラ移動
-					var d = 0.8;
-					var targetPositionX = camera.position.x * d + player.mesh.position.x * (1 - d);
-					var targetPositionY = camera.position.y * d + player.mesh.position.y * (1 - d);
-					camera.position.x = targetPositionX;
-					camera.position.y = targetPositionY;
-					camera.lookAt(new THREE.Vector3(targetPositionX, targetPositionY, 0));
 				}
 			};
 		}
