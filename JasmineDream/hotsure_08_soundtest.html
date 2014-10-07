@@ -28,6 +28,8 @@
 </head>
 <body>
 	<div id="screen"><span id="load_msg">now loading...</span></div>
+
+	<audio src="Cyber_World.mp3" autoplay loop>
 	
 	<script type="text/javascript" src="lib/three.min.js"></script>
 	<script src="lib/OrbitControls.js"></script>
@@ -45,7 +47,62 @@
 		// デザインを記述
 		this.myDesign = new function() {
 			// 変数定義
-			var core = new THREE.Object3D();
+			// exp
+			var exp = new THREE.Object3D();
+			for (var i = 0; i < 8; i++) {
+				var ix = i & 1;
+				var iy = (i >> 1) & 1;
+				var iz = (i >> 2) & 1;
+				var g = new THREE.BoxGeometry(3, 3, 3);
+				var m = new THREE.MeshLambertMaterial({color : 0xeeeeee});
+				var box = new THREE.Mesh(g, m);
+				box.position.set(2 - 4 * ix, 2 - 4 * iy, 2 - 4 * iz);
+				exp.add(box);
+			}
+
+			// akatan
+			var akatan = new THREE.Object3D();
+			var g = new THREE.BoxGeometry(6, 10, 1);
+			var m = new THREE.MeshLambertMaterial({color : 0xff1111});
+			var box = new THREE.Mesh(g, m);
+			box.position.y = 9;
+			akatan.add(box);
+
+			box = new THREE.Mesh(g, m);
+			box.position.x = -9;
+			box.rotation.z = Math.PI / 2;
+			akatan.add(box);
+
+			box = new THREE.Mesh(g, m);
+			box.position.x = 9;
+			box.rotation.z = Math.PI / 2;
+			akatan.add(box);
+
+			box = new THREE.Mesh(g, m);
+			box.position.y = -9;
+			akatan.add(box);
+
+			// aotan
+			var aotan = new THREE.Object3D();
+			var g = new THREE.BoxGeometry(6, 10, 2);
+			var m = new THREE.MeshLambertMaterial({color : 0x5522ff});
+			var box = new THREE.Mesh(g, m);
+			box.position.y = 9;
+			aotan.add(box);
+
+			box = new THREE.Mesh(g, m);
+			box.position.x = -9;
+			box.rotation.z = Math.PI / 2;
+			aotan.add(box);
+
+			box = new THREE.Mesh(g, m);
+			box.position.x = 9;
+			box.rotation.z = Math.PI / 2;
+			aotan.add(box);
+
+			box = new THREE.Mesh(g, m);
+			box.position.y = -9;
+			aotan.add(box);
 
 			var onKeyDown = function(e) {
 				switch(e.keyCode) {
@@ -75,25 +132,30 @@
 			return {
 				// 初期化
 				init : function() {
-					for (var i = 0; i < 8; i++) {
-						var ix = i & 1;
-						var iy = (i >> 1) & 1;
-						var iz = (i >> 2) & 1;
-						var g = new THREE.BoxGeometry(4, 4, 4);
-						var m = new THREE.MeshLambertMaterial({color : 0xff0000});
-						var box = new THREE.Mesh(g, m);
-						box.position.set(3 - 6 * ix, 3 - 6 * iy, 3 - 6 * iz);
-						core.add(box);
+					// イベントリスナーセット
+					window.addEventListener('keydown', onKeyDown, false);
 
-						// イベントリスナーセット
-						window.addEventListener('keydown', onKeyDown, false);
-					}
+					exp.position.x = 200;
+					akatan.position.set(-50, 100, 0);
+					aotan.position.set(50, 100, 0);
 
-					scene.add(core);
+					scene.add(exp);
+					scene.add(akatan);
+					scene.add(aotan);
+
+					// var g = new THREE.BoxGeometry(28, 28, 1);
+					// var m = new THREE.MeshLambertMaterial({color : 0xffff11});
+					// var box = new THREE.Mesh(g, m);
+					// akatan.add(box);
 				},
 
 				// 状態更新
 				update : function() {
+					exp.rotation.x += 0.05;
+					exp.rotation.y += 0.05;
+
+					akatan.rotation.z -= 0.05;
+					aotan.rotation.z += 0.05;
 				}
 			};
 		}
