@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<title>hotsure_08</title>
+	<style>
+	html, body {
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		padding: 0;
+
+		overflow: hidden;
+		background: #111;
+		color: #eee;
+		text-align: center;
+	}
+
+	#canvas {
+		position: absolute;
+		top: 60px;
+		left: 0px;
+
+		border: solid 1px black;
+		background: #fff;
+	}
+	</style>
+</head>
+<body>
+	<div id="screen"><span id="load_msg">now loading...</span></div>
+
+	<script type="text/javascript" src="lib/three.min.js"></script>
+	<script src="lib/OrbitControls.js"></script>
+	<script type="text/javascript" src="lib/stats.min.js"></script>
+	<script type="text/javascript" src="soundEffect.js"></script>
+	<script>
+	(function() {
+		// 変数
+		var WIDTH = window.innerWidth;
+		var HEIGHT = window.innerHeight;
+		var scene, camera, renderer, cameraControls, stats;
+		var screenID = document.getElementById("screen");
+		var bgColor = 0x333333;
+
+		// デザインを記述
+		this.myDesign = new function() {
+			// 変数定義
+			// exp
+			var exp = new THREE.Object3D();
+			for (var i = 0; i < 8; i++) {
+				var ix = i & 1;
+				var iy = (i >> 1) & 1;
+				var iz = (i >> 2) & 1;
+				var g = new THREE.BoxGeometry(3, 3, 3);
+				var m = new THREE.MeshLambertMaterial({color : 0xeeeeee});
+				var box = new THREE.Mesh(g, m);
+				box.position.set(2 - 4 * ix, 2 - 4 * iy, 2 - 4 * iz);
+				exp.add(box);
+			}
+
+			// akatan
+			var akatan = new THREE.Object3D();
+			var g = new THREE.BoxGeometry(6, 10, 1);
+			var m = new THREE.MeshLambertMaterial({color : 0xff1111});
+			var box = new THREE.Mesh(g, m);
+			box.position.y = 9;
+			akatan.add(box);
+
+			box = new THREE.Mesh(g, m);
+			box.position.x = -9;
+			box.rotation.z = Math.PI / 2;
+			akatan.add(box);
+
+			box = new THREE.Mesh(g, m);
+			box.position.x = 9;
+			box.rotation.z = Math.PI / 2;
+			akatan.add(box);
+
+			box = new THREE.Mesh(g, m);
+			box.position.y = -9;
+			akatan.add(box);
+
+			// aotan
+			var aotan = new THREE.Object3D();
+			var g = new THREE.BoxGeometry(6, 10, 2);
+			var m = new THREE.MeshLambertMaterial({color : 0x5522ff});
+			var box = new THREE.Mesh(g, m);
+			box.position.y = 9;
+			aotan.add(box);
+
+			box = new THREE.Mesh(g, m);
+			box.position.x = -9;
+			box.rotation.z = Math.PI / 2;
+			aotan.add(box);
+
+			box = new THREE.Mesh(g, m);
+			box.position.x = 9;
+			box.rotation.z = Math.PI / 2;
+			aotan.add(box);
+
+			box = new THREE.Mesh(g, m);
+			box.position.y = -9;
+			aotan.add(box);
+
+			// bird
+			var Bird = function () {
+				var scope = this;
+
+				THREE.Geometry.call( this );
+
+				v(   5,   0,   0 );
+				v( - 5, - 2,   1 );
+				v( - 5,   0,   0 );
+				v( - 5, - 2, - 1 );
+
+				v(   0,   2, - 6 );
+				v(   0,   2,   6 );
+				v(   2,   0,   0 );
+				v( - 3,   0,   0 );
+
+				f3( 0, 2, 1 );
+				// f3( 0, 3, 2 );
+
+				f3( 4, 7, 6 );
+				f3( 5, 6, 7 );
+
+				this.computeFaceNormals();
+
+				function v( x, y, z ) {
+
+					scope.vertices.push( new THREE.Vector3( x, y, z ) );
+
+				}
+
+				function f3( a, b, c ) {
+
+					scope.faces.push( new THREE.Face3( a, b, c ) );
+
+				}
+
+			};
+
+			Bird.prototype = Object.create( THREE.Geometry.prototype );
+
+			var bird = new THREE.Mesh(new Bird(), m);
+
+			// sample
+			var g = new THREE.SphereGeometry(8);
+			var m = new THREE.MeshBasicMaterial({color : 0xff0000});
+			var sample = new THREE.Mesh(g, m);
+
+			// tsubame
+			var color = new THREE.Color();
+			color.setHSL(0.4, 0.6, 0.5);
+			var g = new THREE.BoxGeometry(4, 8, 0.5);
+			var m = new THREE.MeshLambertMaterial({color : color});
+			var tsubame = new THREE.Object3D();
+			var plate = new THREE.Object3D();
+			var y = new THREE.Mesh(g, m);
+			plate.add(y);
+
+			y = y.clone();
+			y.position.z = 2;
+			y.position.y = -3;
+			plate.add(y);
+
+			y = y.clone();
+			y.position.z = -2;
+			y.position.y = 3;
+			plate.add(y);
+
+			plate.position.z = 3;
+			plate.position.y = -1;
+			tsubame.add(plate);
+
+			plate = plate.clone();
+			plate.position.z = -3;
+			plate.rotation.y = Math.PI;
+			tsubame.add(plate);
+
+			// g = new THREE.SphereGeometry(4);
+			// color.setHSL(0.4, 0.9, 0.4);
+			// m = new THREE.MeshLambertMaterial({color : color});
+			// y = new THREE.Mesh(g, m);
+			// tsubame.add(y);
+
+			// syobu
+			var g = new THREE.OctahedronGeometry(15);
+			var m = new THREE.MeshLambertMaterial({color : 0xff00ff});
+			var syobu = new THREE.Mesh(g, m);
+
+			// yanagi
+			var core = new THREE.Object3D();
+			var color = new THREE.Color();
+			this.hue = 0.8;
+			color.setHSL(this.hue, 1.0, 0.5);
+
+			var g = new THREE.BoxGeometry(6, 6, 6);
+			var m = new THREE.MeshLambertMaterial({color : color, wireframe : true});
+			var box = new THREE.Mesh(g, m);
+			var a = new THREE.Object3D();
+			a.add(box);
+
+			box = box.clone();
+			box.position.set(6, 0, 0);
+			a.add(box);
+
+			box = box.clone();
+			box.position.set(0, 6, 0);
+			a.add(box);
+
+			a.rotation.z = Math.PI / 4;
+			a.position.y = 2;
+
+			core.add(a);
+
+			a = a.clone();
+			a.position.y = -2;
+			a.rotation.z += Math.PI;
+			core.add(a);
+
+
+			var onKeyDown = function(e) {
+				switch(e.keyCode) {
+					case 37: // key "Left"
+					e.preventDefault();
+					break;
+
+					case 38: // key "Up"
+					e.preventDefault();
+					break;
+
+					case 39: // key "Right"
+					e.preventDefault();
+					(new Audio(seShot)).play();
+					break;
+
+					case 40: // key "Down"
+					e.preventDefault();
+					(new Audio(seExplosion)).play();
+					break;
+				}
+			};
+
+			return {
+				// 初期化
+				init : function() {
+					// イベントリスナーセット
+					window.addEventListener('keydown', onKeyDown, false);
+
+					exp.position.set(0, -100, 0);
+					akatan.position.set(-50, 100, 0);
+					aotan.position.set(50, 100, 0);
+					bird.position.set(100, 100, 0);
+					sample.position.set(-50, 0, 0);
+					tsubame.position.set(-100, 0, 0)
+					syobu.position.set(0, 100, 0)
+
+					scene.add(exp);
+					scene.add(akatan);
+					scene.add(aotan);
+					scene.add(bird);
+					scene.add(sample);
+					scene.add(tsubame);
+					scene.add(syobu);
+					scene.add(core);
+
+					// var g = new THREE.BoxGeometry(8, 8, 1);
+					// var m = new THREE.MeshLambertMaterial({color : 0xffff11});
+					// var box = new THREE.Mesh(g, m);
+					// scene.add(box);
+				},
+
+				// 状態更新
+				update : function() {
+					exp.rotation.x += 0.05;
+					exp.rotation.y += 0.05;
+
+					akatan.rotation.z -= 0.05;
+					aotan.rotation.z += 0.05;
+
+					tsubame.rotation.y += 0.2;
+
+					syobu.rotation.x += 0.05;
+					syobu.rotation.y += 0.05;
+
+					core.rotation.z += 0.08;
+				}
+			};
+		}
+
+		// 初期化
+		function init() {
+			// シーン
+			scene = new THREE.Scene();
+
+			// カメラ
+			camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 1, 1500);
+			camera.position.set(0, 0, 500);
+			camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+			// フォグ
+			scene.fog = new THREE.Fog(bgColor, 1250, 1500);
+
+			// レンダラー
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize(WIDTH, HEIGHT);
+			renderer.setClearColor(bgColor, 1);
+			screenID.appendChild(renderer.domElement);
+
+			// カメラコントロール
+			cameraControls = new THREE.OrbitControls(camera, renderer.domElement);
+			cameraControls.noPan = true;
+
+			// 光源
+			var light = new THREE.DirectionalLight(0xffffff, 0.95);
+			light.position.set(0, 0, 1000);
+			scene.add(light);
+
+			// 環境光
+			// var ambient = new THREE.AmbientLight(0x222222, 1);
+			// scene.add(ambient);
+
+			// イベント追加
+			window.addEventListener('resize', onWindowResize, false);
+
+			// 自前のデザインを初期化
+			myDesign.init();
+
+			// fps表示
+			stats = new Stats();
+			stats.domElement.style.position = "absolute";
+			stats.domElement.style.top = "0px";
+			stats.domElement.style.left = "0px";
+			screenID.appendChild(stats.domElement);
+
+			// ロードメッセージ削除
+			screenID.removeChild(document.getElementById("load_msg"));
+
+			// ループ開始
+			requestAnimationFrame(animate);
+		}
+
+		// アニメーションループ
+		function animate() {
+			// 状態更新
+			stats.update();
+			cameraControls.update();
+			myDesign.update();
+
+			// レンダリング
+			renderer.render(scene, camera);
+
+			requestAnimationFrame(animate);
+		}
+
+		// イベントリスナー
+		function onWindowResize(e) {
+			WIDTH = window.innerWidth;
+			HEIGHT = window.innerHeight;
+			renderer.setSize(WIDTH, HEIGHT);
+			camera.aspect = WIDTH / HEIGHT;
+			camera.updateProjectionMatrix();
+		}
+
+		init();
+
+	})();
+	</script>
+</body>
+</html>
