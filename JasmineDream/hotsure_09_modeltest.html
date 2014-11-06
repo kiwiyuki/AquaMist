@@ -219,6 +219,20 @@
 			a.rotation.z += Math.PI;
 			core.add(a);
 
+			// player
+			var player = new THREE.Object3D();
+			var color = new THREE.Color();
+			color.setHSL(0.6, 1.0, 0.5);
+			for (var i = 0; i < 8; i++) {
+				var ix = i & 1;
+				var iy = (i >> 1) & 1;
+				var iz = (i >> 2) & 1;
+				var g = new THREE.BoxGeometry(4, 4, 4);
+				var m = new THREE.MeshLambertMaterial({color : color});
+				var box = new THREE.Mesh(g, m);
+				box.position.set(3 - 6 * ix, 3 - 6 * iy, 3 - 6 * iz);
+				player.add(box);
+			}
 
 			var onKeyDown = function(e) {
 				switch(e.keyCode) {
@@ -253,8 +267,9 @@
 					aotan.position.set(50, 100, 0);
 					bird.position.set(100, 100, 0);
 					sample.position.set(-50, 0, 0);
-					tsubame.position.set(-100, 0, 0)
-					syobu.position.set(0, 100, 0)
+					tsubame.position.set(-100, 0, 0);
+					syobu.position.set(0, 100, 0);
+					core.position.set(-100, 100, 0);
 
 					scene.add(exp);
 					scene.add(akatan);
@@ -264,6 +279,7 @@
 					scene.add(tsubame);
 					scene.add(syobu);
 					scene.add(core);
+					scene.add(player);
 
 					// var g = new THREE.BoxGeometry(8, 8, 1);
 					// var m = new THREE.MeshLambertMaterial({color : 0xffff11});
@@ -285,6 +301,9 @@
 					syobu.rotation.y += 0.05;
 
 					core.rotation.z += 0.08;
+
+					player.rotation.x += 0.05;
+					player.rotation.y += 0.05;
 				}
 			};
 		}
